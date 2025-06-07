@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dodge Cubes! - LÁSER FINAL</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #000, #111);
+      font-family: monospace;
+      color: #00ffcc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    canvas {
+      border: 3px solid #00ffcc;
+      background-color: #000;
+      margin-top: 1rem;
+      box-shadow: 0 0 30px #00ffcc88;
+    }
+    h1 {
+      color: #00ffcc;
+      margin: 1rem;
+      text-shadow: 0 0 8px #00ffff;
+    }
+    p {
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧊 Dodge Cubes! Extremo >:D</h1>
+  <p>WASD / Flechas para moverte — Esquiva los cubos y los rayos láser⚡</p>
+
+  <div id="start-menu" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #00ffcc; z-index: 10;">
+    <h1>🚀 Dodge Cubes!</h1>
+    <p>Evita cubos y rayos — WASD o Flechas para moverte</p>
+    <button onclick="startGame()" style="padding: 1rem 2rem; font-size: 1.2rem; border: none; background: #00ffcc; color: #000; border-radius: 8px; cursor: pointer;">Iniciar Juego</button>
+  </div>
+
+  <div id="game-over" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.9); display: none; flex-direction: column; align-items: center; justify-content: center; color: #ff5555; z-index: 20;">
+    <h1>💀 GAME OVER</h1>
+    <p id="final-score" style="font-size: 1.5rem; margin: 1rem 0;"></p>
+  </div>
+
+  <div id="game-wrapper" style="position: relative; width: 640px; height: 500px; margin: auto;">
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const player = { x: 285, y: 360, width: 30, height: 30, speed: 6 };
+    const keys = {};
+    const cubes = [];
+    const sparks = [];
+    let lasers = [];
+    let laserWarnings = [];
+
+    let score = 0;
+    let spawnInterval = 500;
+    let cubeSpeed = 3;
+    let laserInterval = 3000;
+    let gameStarted = false;
+
+    document.addEventListener("keydown", (e) => keys[e.key] = true);
+    document.addEventListener("keyup", (e) => keys[e.key] = false);
+
+    function drawPlayer() {
+      ctx.fillStyle = "#00ffcc";
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+      for (let i = 0; i < 3; i++) {
+        sparks.push({
+          x: player.x + player.width / 2,
+          y: player.y + player.height,
+          vx: (Math.random() - 0.5) * 3,
+          vy: Math.random() * 2 + 1,
+          life: 20,
+          color: "#00ffff"
+        });
+      }
+    }
+
+    function drawSparks() {
+      for (let s of sparks) {
+        ctx.fillStyle = s.color;
+        ctx.fillRect(s.x, s.y, 2, 2);
+        s.x += s.vx;
+        s.y += s.vy;
+        s.life--;
+      }
+    }
+
+    function drawCubes() {
+      for (let c of cubes) {
+        ctx.fillStyle = `hsl(${(score * 7 + c.y) % 360}, 100%, 60%)`;
+        ctx.fillRect(c.x, c.y, c.size, c.size);
+        c.y += c.speed;
+      }
+    }
+
+    function drawWarnings() {
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = "rgba(255,0,0,0.6)";
+      for (let w of laserWarnings) {
+        ctx.beginPath();
+        if (w.dir === 'vertical') {
+          ctx.moveTo(w.x, 0);
+          ctx.lineTo(w.x, canvas.height);
+        } else {
+          ctx.moveTo(0, w.y);
+          ctx.lineTo(canvas.width, w.y);
+        }
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    }
+
+    function drawLasers() {
+      ctx.strokeStyle = "#ff0000";
+      ctx.lineWidth = 2;
+      for (let l of lasers) {
+        ctx.beginPath();
+        if (l.dir === 'vertical') {
+          ctx.moveTo(l.x, 0);
+          ctx.lineTo(l.x, canvas.height);
+        } else {
+          ctx.moveTo(0, l.y);
+          ctx.lineTo(canvas.width, l.y);
+        }
+        ctx.stroke();
+      }
+    }
+
+    function spawnCube() {
+      const size = 20 + Math.random() * 30;
+      cubes.push({
+        x: Math.random() * (canvas.width - size),
+        y: -size,
+        size: size,
+        speed: cubeSpeed + Math.random() * 2
+      });
+    }
+
+    function spawnLaser() {
+      const num = Math.random() < 0.3 ? 2 : 1;
+      for (let i = 0; i < num; i++) {
+        const vertical = Math.random() < 0.5;
+        const l = vertical
+          ? { x: Math.random() * canvas.width, dir: 'vertical' }
+          : { y: Math.random() * canvas.height, dir: 'horizontal' };
+
+        laserWarnings.push(l);
+        setTimeout(() => {
+          lasers.push(l);
+          laserWarnings = laserWarnings.filter(w => w !== l);
+          setTimeout(() => {
+            lasers = lasers.filter(r => r !== l);
+          }, 700);
+        }, 500);
+      }
+    }
+
+    function updatePlayer() {
+      if (keys["ArrowLeft"] || keys["a"]) player.x -= player.speed;
+      if (keys["ArrowRight"] || keys["d"]) player.x += player.speed;
+      if (keys["ArrowUp"] || keys["w"]) player.y -= player.speed;
+      if (keys["ArrowDown"] || keys["s"]) player.y += player.speed;
+
+      player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+      player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
+    }
+
+    function checkCollisions() {
+      for (let c of cubes) {
+        if (
+          player.x < c.x + c.size &&
+          player.x + player.width > c.x &&
+          player.y < c.y + c.size &&
+          player.y + player.height > c.y
+        ) {
+          endGame(score, "💥 ¡Te golpeó un cubo!");
+          return;
+        }
+      }
+
+      for (let l of lasers) {
+        if (
+          (l.dir === 'vertical' && player.x < l.x + 3 && player.x + player.width > l.x - 3) ||
+          (l.dir === 'horizontal' && player.y < l.y + 3 && player.y + player.height > l.y - 3)
+        ) {
+          endGame(score, "⚡ ¡Te golpeó un rayo láser!");
+          return;
+        }
+      }
+    }
+
+    function endGame(finalScore, reason) {
+      document.getElementById("game-over").style.display = "flex";
+      document.getElementById("final-score").textContent = `${reason}\nPuntaje final: ${finalScore}`;
+      setTimeout(() => {
+        document.getElementById("game-over").style.display = "none";
+        document.getElementById("start-menu").style.display = "flex";
+        location.reload(); // Si quieres reinicio automático
+      }, 2000);
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "#00ffcc";
+      ctx.font = "16px monospace";
+      ctx.fillText("Puntaje: " + score, 10, 20);
+    }
+
+    function gameLoop() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      updatePlayer();
+      drawPlayer();
+      drawSparks();
+      drawCubes();
+      drawWarnings();
+      drawLasers();
+      drawScore();
+      checkCollisions();
+
+      cubes.forEach((c, index) => {
+        if (c.y > canvas.height) {
+          cubes.splice(index, 1);
+          score++;
+          if (score % 5 === 0) {
+            cubeSpeed += 0.5;
+            spawnInterval = Math.max(350, spawnInterval - 50);
+          }
+        }
+      });
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function startGame() {
+      document.getElementById("start-menu").style.display = "none";
+      if (!gameStarted) {
+        setInterval(() => {
+          spawnCube();
+          if (score > 10) spawnCube();
+          if (score > 25) spawnCube();
+        }, spawnInterval);
+
+        setInterval(spawnLaser, laserInterval);
+        requestAnimationFrame(gameLoop);
+        gameStarted = true;
+      }
+    }
+  </script>
+</body>
+</html>

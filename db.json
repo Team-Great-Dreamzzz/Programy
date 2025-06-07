@@ -1,0 +1,100 @@
+{
+  "projects": [
+    {
+      "id": "1749233008743",
+      "name": "Foto de la diosa",
+      "description": "Mikuminación mundial",
+      "category": "Imagen",
+      "technologies": [
+        "Búsqueda en internet"
+      ],
+      "status": "abandonado",
+      "author": "Estudiante 2",
+      "createdAt": "2025-06-06T18:03:28.743Z",
+      "files": [
+        {
+          "originalName": "2a33aecb-de54-45d1-90a0-b5a04904d1d6.jpeg",
+          "mimeType": "image/jpeg",
+          "size": 56067,
+          "filePath": "/uploads/1749233008741-2a33aecb-de54-45d1-90a0-b5a04904d1d6.jpeg"
+        }
+      ]
+    },
+    {
+      "id": "1749231715211",
+      "name": "Prueba subida de archivos",
+      "description": "hola",
+      "category": "Desarrollo",
+      "technologies": [
+        "hola"
+      ],
+      "status": "completado",
+      "author": "Estudiante",
+      "createdAt": "2025-06-06T17:41:55.211Z",
+      "files": [
+        {
+          "originalName": "Acuerdo_de_ReunioÌn_de_PrepromocioÌn_4to.B[1].docx",
+          "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "size": 1031087,
+          "filePath": "/uploads/1749231715206-Acuerdo_de_ReunioÌn_de_PrepromocioÌn_4to.B[1].docx"
+        }
+      ]
+    },
+    {
+      "id": "1749231194847",
+      "name": "Prueba Multer",
+      "description": "Es un proyecto bien bonito pero bien complicado (el código me está consumiendo enserio",
+      "category": "Desarrollo web",
+      "technologies": [
+        "HTML",
+        "JS",
+        "JSON",
+        "CSS",
+        "MULTER"
+      ],
+      "status": "en-progreso",
+      "author": "admin",
+      "createdAt": "2025-06-06T17:33:14.847Z",
+      "files": [
+        {
+          "originalName": "SpotiDownloader.com - ãã£ã¨ãããã£ã¨ - å¥½æ¬ é (CV.é·ç¸ã¾ãã).mp3",
+          "mimeType": "audio/mpeg",
+          "size": 12225360,
+          "filePath": "/uploads/1749231194804-SpotiDownloader.com - ãã£ã¨ãããã£ã¨ - å¥½æ¬ é (CV.é·ç¸ã¾ãã).mp3"
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "password": "My.soulmate",
+      "contact": "922 387 831",
+      "isAdmin": true
+    },
+    {
+      "username": "Estudiante",
+      "password": "123abc",
+      "isAdmin": false
+    },
+    {
+      "username": "Estudiante 2",
+      "password": "hola123",
+      "contact": "922 387 831",
+      "isAdmin": false
+    }
+  ],
+  "reports": [
+    {
+      "id": "1749231558405",
+      "projectId": "1749231194847",
+      "reason": "contenido_inapropiado",
+      "description": "ABC",
+      "reportedBy": "Estudiante",
+      "reportedAt": "2025-06-06T17:39:18.405Z",
+      "status": "descartado",
+      "resolvedBy": "admin",
+      "resolvedAt": "2025-06-06T17:40:06.284Z"
+    }
+  ]
+}

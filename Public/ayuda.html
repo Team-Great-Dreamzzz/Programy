@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ayuda | ProgramyX AU</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="ayuda.js" defer></script>
+  <style>
+    /* Estilos para acordeón */
+    .accordion {
+      max-width: 800px;
+      margin: 2rem auto;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .accordion-item + .accordion-item {
+      margin-top: 1rem;
+    }
+    .accordion-header {
+      background: #531b1b;
+      color: #fff;
+      padding: 1rem;
+      cursor: pointer;
+      position: relative;
+      font-weight: 600;
+    }
+    .accordion-header::after {
+      content: "+";
+      position: absolute;
+      right: 1rem;
+      font-size: 1.2rem;
+      transition: transform 0.3s;
+    }
+    .accordion-header.active::after {
+      content: "−";
+      transform: rotate(180deg);
+    }
+    .accordion-content {
+      background: #fff;
+      color: #000;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+      padding: 0 1rem;
+    }
+    .accordion-content p {
+      padding: 1rem 0;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-title" id="home-btn">
+      <img src="image-1-GOrpAWkqrPq5QAE52eL.png" alt="Logo ProgramyX AU">
+      <a href="index.html">ProgramyX AU</a>
+    </div>
+    <div class="menu-toggle" id="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <nav id="nav">
+      <a href="index.html">Inicio</a>
+      <a href="proyectos.html">Proyectos</a>
+      <a href="ayuda.html">Ayuda</a>
+      <a href="herramientas.html">Herramientas</a>
+      <a href="Sobrenosotros.html">Sobre Nosotros</a>
+      <div class="menu-video-wrapper">
+        <video autoplay muted loop playsinline>
+          <source src="menu-loop-video.mp4" type="video/mp4" />
+          Tu navegador no admite el elemento de video.
+        </video>
+      </div>
+      
+    </nav>
+  </header>
+  <main class="fade-in">
+    <h1>Ayuda y Soporte</h1>
+    <p>En esta sección podrás encontrar orientación detallada y soluciones para abordar los problemas más comunes que suelen surgir mientras navegas por nuestra página.<br> Hemos recopilado cuidadosamente una lista de las consultas y dificultades más frecuentes, con el objetivo de ofrecerte la asistencia necesaria de manera rápida y eficiente.<br> Sin embargo, entendemos que cada situación puede ser única y que, en ocasiones, podrías enfrentarte a un inconveniente que no esté contemplado en esta lista.<br> Por ello, si en algún momento te topas con un problema que no está incluido aquí, o si consideras que tu situación requiere un apoyo más específico y personalizado, te invitamos a dirigirte a nuestra sección de contacto.<br> Allí tendrás la oportunidad de comunicarte directamente conmigo para compartir los detalles de tu caso, y con gusto haré todo lo posible por ofrecerte la ayuda que necesitas.<br> ¡No dudes en escribir! Estoy aquí para apoyarte y asegurarte la mejor experiencia posible en nuestra página. 😄<br></p>
+    <HR>
+    <div class="accordion">
+      <div class="accordion-item">
+        <div class="accordion-header">Preguntas Frecuentes</div>
+        <div class="accordion-content">
+          <p><strong>¿Cómo me registro?</strong><br>Haz clic en "Registrarse" en la esquina superior y completa el formulario.</p>
+          <p><strong>¿Puedo recuperar mi contraseña?</strong><br>En la página de inicio de sesión, selecciona "Olvidé mi contraseña" y sigue los pasos.</p>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <div class="accordion-header">Problemas Encontrados</div>
+        <div class="accordion-content">
+          <p>Si experimentas errores al cargar proyectos, revisa tu conexión o borra la caché del navegador. Para bugs graves, contáctanos.</p>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <div class="accordion-header">Reglas y Normas</div>
+        <div class="accordion-content">
+          <p>1. Respeto mutuo en comentarios. <br>2. Prohibido contenido ofensivo. <br>3. Cumplir derechos de autor.</p>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <div class="accordion-header">Guía Rápida</div>
+        <div class="accordion-content">
+          <p>Explora la plataforma: busca proyectos, filtra por categoría, y sube tu propio proyecto desde tu panel de usuario.</p>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: center;">
+    <iframe src="dodge-cubes-iframe-adjusted.html" width="780" height="620" style="border:none;"></iframe>
+  </div>
+  </main>
+  <footer>
+    &copy; 2025 ProgramyX AU. Todos los derechos reservados.
+  </footer>
+  <script src="menu-toggle.js"></script>
+</body>
+</html>

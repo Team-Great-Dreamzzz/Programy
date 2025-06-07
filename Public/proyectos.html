@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProgramyX AU - Gestión de Proyectos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="styles.css" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    :root {
+      --color-guinda: #531b1b;
+      --color-light: #f5f5f5;
+      --color-white: #ffffff;
+      --color-gray: #e0e0e0;
+      --color-dark: #333333;
+      --color-accent: #2ecc71;
+      --color-danger: #e74c3c;
+      --color-warning: #f39c12;
+    }
+    
+    /* HEADER */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background-color: var(--color-guinda);
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--color-guinda);
+      color: white;
+    }
+    
+    .logo-title {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    .logo-title a {
+      color: white;
+      text-decoration: none;
+    }
+    
+    .logo-title img {
+      height: 40px;
+      border-radius: 8px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      background-color: var(--color-light);
+      color: var(--color-dark);
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    .sidebar {
+      width: 250px;
+      background-color: var(--color-white);
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      padding: 1.5rem 0;
+      transition: all 0.3s;
+      z-index: 99;
+    }
+    
+    .sidebar-collapsed {
+      width: 70px;
+    }
+    
+    .sidebar-toggle {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 1rem 1rem;
+      cursor: pointer;
+      color: var(--color-guinda);
+    }
+    
+    .sidebar-menu {
+      list-style: none;
+    }
+    
+    .menu-item {
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .menu-item:hover {
+      background-color: #f0f0f0;
+    }
+    
+    .menu-item.active {
+      background-color: rgba(83, 27, 27, 0.125);
+      border-left: 3px solid var(--color-guinda);
+    }
+    
+    .menu-icon {
+      margin-right: 1rem;
+      font-size: 1.2rem;
+      color: var(--color-guinda);
+      min-width: 24px;
+    }
+    
+    .menu-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .content-header {
+      padding: 1.5rem 2rem;
+      background-color: var(--color-white);
+      border-bottom: 1px solid var(--color-gray);
+    }
+    
+    .content-body {
+      padding: 2rem;
+      flex: 1;
+    }
+    
+    h1 {
+      color: var(--color-guinda);
+      margin-bottom: 1rem;
+    }
+    
+    .section {
+      display: none;
+    }
+    
+    .section.active {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+    
+    .project-card {
+      background-color: var(--color-white);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s;
+      overflow: hidden;
+    }
+    
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .project-card img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    
+    .project-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-gray);
+    }
+    
+    .btn {
+      margin: auto;
+      margin-left: 1.5%;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .btn-primary {
+      background-color: var(--color-guinda);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #3a1212;
+    }
+    
+    .btn-danger {
+      background-color: var(--color-danger);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background-color: #c0392b;
+    }
+    
+    .btn-success {
+      background-color: var(--color-accent);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background-color: #27ae60;
+    }
+    
+    .btn-warning {
+      background-color: var(--color-warning);
+      color: white;
+    }
+    
+    .btn-warning:hover {
+      background-color: #e67e22;
+    }
+
+    .auth-tabs {
+      display: flex;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .tab-btn {
+      flex: 1;
+      padding: 1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: #666;
+      transition: all 0.3s;
+    }
+    
+    .tab-btn.active {
+      color: var(--color-guinda);
+      border-bottom: 3px solid var(--color-guinda);
+    }
+    
+    .project-form {
+      background-color: var(--color-white);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+      max-width: 600px;
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+    }
+    
+    textarea.form-control {
+      min-height: 120px;
+      resize: vertical;
+    }
+    
+    .image-preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+    
+    .image-preview {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0,0,0,0.7);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background-color: var(--color-white);
+      border-radius: 10px;
+      width: 90%;
+      max-width: 700px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      animation: modalFadeIn 0.3s ease-out;
+      position: relative;
+    }
+    
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 1.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #333;
+      z-index: 10;
+    }
+    
+    .project-details {
+      padding: 2rem;
+    }
+    
+    .project-details h2 {
+      color: var(--color-guinda);
+      margin-bottom: 1rem;
+    }
+    
+    .project-details p {
+      margin-bottom: 1rem;
+    }
+    
+    .project-files {
+      margin-top: 1.5rem;
+    }
+    
+    .file-item {
+      display: flex;
+      align-items: center;
+      padding: 0.8rem;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .file-icon {
+      font-size: 1.5rem;
+      margin-right: 1rem;
+    }
+    
+    .file-info {
+      flex: 1;
+    }
+    
+    .file-name {
+      font-weight: 600;
+    }
+    
+    .file-size {
+      color: #666;
+      font-size: 0.8rem;
+    }
+    
+    .user-info {
+      background-color: #f0f0f0;
+      padding: 1rem;
+      border-radius: 5px;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+    
+    .auth-form {
+      padding: 2rem;
+    }
+    
+    .auth-form h2 {
+      margin-bottom: 1.5rem;
+      color: var(--color-guinda);
+      text-align: center;
+    }
+    
+    .auth-form .form-control {
+      margin-bottom: 1rem;
+    }
+    
+    .auth-message {
+      text-align: center;
+      padding: 1rem;
+      font-weight: 600;
+    }
+    
+    .auth-message.error {
+      color: var(--color-danger);
+    }
+    
+    .auth-message.success {
+      color: var(--color-accent);
+    }
+    
+    body.modal-open {
+      overflow: hidden;
+    }
+    
+    /* Barra de búsqueda */
+    .search-bar {
+      display: flex;
+      margin-bottom: 1.5rem;
+      gap: 10px;
+    }
+    
+    .search-bar input {
+      flex: 1;
+      padding: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-family: 'Inter', sans-serif;
+    }
+      .spinner {
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+    /* Miniaturas de imágenes */
+    .project-thumbnail {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      background-color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+    }
+    
+    .project-thumbnail i {
+      font-size: 3rem;
+    }
+    
+    .image-preview {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+    
+    /* Archivos en los detalles */
+    .file-item a {
+      text-decoration: none;
+      color: var(--color-guinda);
+      font-weight: 600;
+    }
+    
+    .file-item a:hover {
+      text-decoration: underline;
+    }
+    
+    .download-btn {
+      background-color: var(--color-guinda);
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      margin-left: 10px;
+    }
+    
+    .file-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .file-preview {
+      border: 1px solid #eee;
+      border-radius: 5px;
+      padding: 0.8rem;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    
+    .file-preview:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+    
+    .file-preview i {
+      font-size: 2rem;
+      color: rgba(202, 182, 0, 0.877);
+      margin-bottom: 0.5rem;
+    }
+    
+    .no-results {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+    
+    .project-status {
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+    
+    .status-en-progreso {
+      background-color: #f39c12;
+      color: white;
+    }
+    
+    .status-completado {
+      background-color: var(--color-accent);
+      color: white;
+    }
+    
+    .status-abandonado {
+      background-color: #95a5a6;
+      color: white;
+    }
+    
+    .project-tech {
+      display: inline-block;
+      background-color: #e0e0e0;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      margin: 0.3rem 0.3rem 0 0;
+      font-size: 0.85rem;
+    }
+    
+    .tech-tags {
+      margin-top: 0.5rem;
+    }
+    
+    /* Estilos para moderación */
+    .admin-badge {
+      background-color: #d32f2f;
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+      font-weight: bold;
+    }
+    
+    .moderation-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 1rem;
+    }
+    
+    .btn-warning {
+      background-color: #f57c00;
+      color: white;
+    }
+    
+    .btn-warning:hover {
+      background-color: #e65100;
+    }
+    
+    .report-form {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #eee;
+    }
+    
+    .reported-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #f44336;
+      color: white;
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      z-index: 5;
+    }
+    
+    .moderation-panel {
+      background-color: #fff8e1;
+      border-left: 4px solid #ffc107;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .reports-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    .report-card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-left: 4px solid #f44336;
+    }
+    
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .report-meta {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+    
+    .report-reason {
+      background-color: #ffebee;
+      padding: 0.8rem;
+      border-radius: 5px;
+      margin-top: 0.5rem;
+    }
+    
+    .admin-only {
+      display: none;
+    }
+    
+    .admin-visible {
+      display: block;
+    }
+    
+    .resolved-report {
+      border-left: 4px solid #2ecc71;
+      opacity: 0.7;
+    }
+    
+    /* CORRECCIÓN: Solo mostrar sección de moderación cuando está activa */
+.admin-mode .section.admin-only.active {
+    display: block !important;
+}
+
+.admin-mode .section.admin-only:not(.active) {
+    display: none !important;
+}
+
+    .menu-admin {
+      display: none;
+    }
+
+    .admin-mode .menu-admin {
+      display: flex;
+    }
+/* Estilo para el botón de cambiar contraseña */
+#change-password-btn {
+  margin-left: 10px;
+  background-color: #f39c12;
+}
+
+#change-password-btn:hover {
+  background-color: #e67e22;
+}
+
+/* Asegurar que los modales no se solapen */
+.modal {
+  z-index: 1001;
+}
+  @media (max-width: 768px) {
+    body {
+      flex-direction: column;
+    }
+
+    header {
+      flex-wrap: wrap;
+    }
+
+    .menu-toggle {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .menu-toggle span {
+      display: block;
+      width: 25px;
+      height: 3px;
+      background-color: white;
+      border-radius: 3px;
+    }
+
+    #nav {
+      display: none;
+      flex-direction: column;
+      width: 100%;
+      background-color: var(--color-guinda);
+    }
+
+    #nav.show {
+      display: flex;
+    }
+
+    #nav a {
+      padding: 1rem;
+      color: white;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .sidebar {
+      width: 100%;
+      flex-direction: row;
+      overflow-x: auto;
+      white-space: nowrap;
+      box-shadow: none;
+      background-color: var(--color-white);
+    }
+
+    .sidebar-menu {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      padding: 0 1rem;
+    }
+
+    .menu-item {
+      flex: 1;
+      justify-content: center;
+      border-left: none;
+      border-bottom: 3px solid transparent;
+      padding: 1rem 0.5rem;
+    }
+
+    .menu-item.active {
+      background-color: transparent;
+      border-bottom: 3px solid var(--color-guinda);
+    }
+
+    .menu-icon {
+      display: none;
+    }
+
+    .menu-text {
+      font-size: 0.9rem;
+    }
+
+    .sidebar-toggle {
+      display: none;
+    }
+
+    .content-body {
+      padding: 1rem;
+    }
+
+    .project-form {
+      max-width: 100%;
+    }
+
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .moderation-actions {
+      flex-direction: column;
+    }
+  }
+  </style>
+</head>
+<body>
+  <!-- Barra lateral -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-toggle" id="sidebar-toggle">
+      <i class="fas fa-chevron-left"></i>
+    </div>
+    <ul class="sidebar-menu">
+      <li class="menu-item active" data-section="all-projects">
+        <i class="fas fa-project-diagram menu-icon"></i>
+        <span class="menu-text">Todos los Proyectos</span>
+      </li>
+      <li class="menu-item" data-section="my-projects">
+        <i class="fas fa-user-circle menu-icon"></i>
+        <span class="menu-text">Mis Proyectos</span>
+      </li>
+      <li class="menu-item" data-section="create-project">
+        <i class="fas fa-plus-circle menu-icon"></i>
+        <span class="menu-text">Crear Proyecto</span>
+      </li>
+      <!-- Nuevo item para moderación (solo visible para admin) -->
+      <li class="menu-item admin-only menu-admin" data-section="moderation">
+        <i class="fas fa-shield-alt menu-icon"></i>
+        <span class="menu-text">Moderación</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <header>
+      <div class="logo-title" id="home-btn">
+        <img src="image-1-GOrpAWkqrPq5QAE52eL.png" alt="Logo ProgramyX AU">
+        <a href="index.html">ProgramyX AU</a>
+      </div>
+      <div class="menu-toggle" id="menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <nav id="nav">
+        <a href="index.html">Inicio</a>
+        <a href="proyectos.html">Proyectos</a>
+        <a href="ayuda.html">Ayuda</a>
+        <a href="herramientas.html">Herramientas</a>
+        <a href="Sobrenosotros.html">Sobre Nosotros</a>
+      </nav>
+    </header>
+
+    <div class="content-header">
+      <div id="user-info" class="user-info">
+  <p>Conectado como: <span id="current-user"></span> 
+    <button id="change-password-btn" class="btn btn-warning">Cambiar Contraseña</button>
+    <button id="logout-btn" class="btn btn-primary">Cerrar Sesión</button>
+  </p>
+</div>
+      <h1 id="section-title">Todos los Proyectos</h1>
+      <div id="user-info" class="user-info">
+        <p>Conectado como: <span id="current-user"></span> 
+          <button id="logout-btn" class="btn btn-primary">Cerrar Sesión</button>
+        </p>
+      </div>
+    </div>
+
+    <div class="content-body">
+      <!-- Sección: Todos los proyectos -->
+      <div id="all-projects" class="section active">
+        <div class="search-bar">
+          <input type="text" id="search-input" placeholder="Buscar proyectos por nombre, categoría, tecnología...">
+          <button id="search-btn" class="btn btn-primary">
+            <i class="fas fa-search"></i> Buscar
+          </button>
+        </div>
+        <div id="projects-list" class="projects-grid">
+          <!-- Proyectos se cargarán aquí -->
+        </div>
+      </div>
+
+      <!-- Sección: Mis proyectos -->
+      <div id="my-projects" class="section">
+        <div class="search-bar">
+          <input type="text" id="user-search-input" placeholder="Buscar mis proyectos...">
+          <button id="user-search-btn" class="btn btn-primary">
+            <i class="fas fa-search"></i> Buscar
+          </button>
+        </div>
+        <div id="user-projects-list" class="projects-grid">
+          <!-- Proyectos del usuario se cargarán aquí -->
+        </div>
+      </div>
+
+<!-- Sección: Crear proyecto -->
+<div id="create-project" class="section">
+  <form id="project-form" class="project-form" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="project-name" class="form-label">Nombre del proyecto</label>
+      <input type="text" id="project-name" name="name" class="form-control" placeholder="Ej: Mi aplicación web" required>
+    </div>
+
+    <div class="form-group">
+      <label for="project-category" class="form-label">Categoría</label>
+      <input type="text" id="project-category" name="category" class="form-control" placeholder="Ej: Desarrollo Web, Diseño, etc.">
+    </div>
+
+    <div class="form-group">
+      <label for="project-desc" class="form-label">Descripción</label>
+      <textarea id="project-desc" name="description" class="form-control" placeholder="Describe tu proyecto en detalle..." required></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="project-technologies" class="form-label">Tecnologías utilizadas</label>
+      <input type="text" id="project-technologies" name="technologies" class="form-control" placeholder="Separadas por comas (HTML, CSS, JavaScript)">
+    </div>
+
+    <div class="form-group">
+      <label for="project-status" class="form-label">Estado del proyecto</label>
+      <select id="project-status" name="status" class="form-control">
+        <option value="en-progreso">En progreso</option>
+        <option value="completado">Completado</option>
+        <option value="abandonado">Abandonado</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="project-files" class="form-label">Archivos adjuntos</label>
+      <input type="file" id="project-files" name="files" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar,.7z,.mp3,.wav,.ogg">
+      <small class="text-muted">Puedes subir imágenes, documentos, archivos comprimidos o audios</small>
+    </div>
+
+    <div id="image-preview" class="image-preview-container"></div>
+
+    <button type="submit" class="btn btn-primary" id="submit-btn">
+      <i class="fas fa-paper-plane"></i> Publicar Proyecto
+    </button>
+  </form>
+</div>
+
+      <!-- Nueva sección: Moderación -->
+      <div id="moderation" class="section admin-only">
+        <div class="moderation-panel">
+          <h2><i class="fas fa-shield-alt"></i> Panel de Moderación</h2>
+          <p>Desde aquí puedes gestionar los proyectos reportados y tomar acciones de moderación.</p>
+        </div>
+        
+        <h3>Reportes Pendientes</h3>
+        <div id="reports-list" class="reports-grid">
+          <!-- Reportes se cargarán aquí -->
+        </div>
+        
+        <h3 style="margin-top: 2rem;">Reportes Resueltos</h3>
+        <div id="resolved-reports-list" class="reports-grid">
+          <!-- Reportes resueltos se cargarán aquí -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Detalles del Proyecto -->
+  <div id="project-details-modal" class="modal">
+    <div class="modal-content">
+      <button class="close-modal">&times;</button>
+      <div id="project-details-content" class="project-details"></div>
+    </div>
+  </div>
+
+  <!-- Modal de Reporte -->
+  <div id="report-modal" class="modal">
+    <div class="modal-content">
+      <button class="close-modal">&times;</button>
+      <div class="project-details">
+        <h2>Reportar Proyecto</h2>
+        <p>Estás reportando el proyecto: <strong id="report-project-name"></strong></p>
+        
+        <form id="report-form">
+          <div class="form-group">
+            <label for="report-reason" class="form-label">Motivo del reporte</label>
+            <select id="report-reason" class="form-control" required>
+              <option value="">Selecciona un motivo</option>
+              <option value="contenido_inapropiado">Contenido inapropiado</option>
+              <option value="spam">Spam o publicidad</option>
+              <option value="derechos_autor">Infracción de derechos de autor</option>
+              <option value="informacion_falsa">Información falsa</option>
+              <option value="otro">Otro motivo</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="report-description" class="form-label">Descripción detallada</label>
+            <textarea id="report-description" class="form-control" placeholder="Describe el problema con más detalle..." required></textarea>
+          </div>
+          
+          <button type="submit" class="btn btn-warning">
+            <i class="fas fa-flag"></i> Enviar Reporte
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Autenticación -->
+  <div id="auth-modal" class="modal active">
+    <div class="modal-content">
+      <div class="auth-tabs">
+        <button class="tab-btn active" data-tab="login">Iniciar Sesión</button>
+        <button class="tab-btn" data-tab="register">Registrarse</button>
+      </div>
+      
+      <div id="login-form-container" class="auth-form">
+        <h2>Iniciar Sesión</h2>
+        <form id="login-form">
+          <input type="text" id="username" class="form-control" placeholder="Usuario" required>
+          <input type="password" id="password" class="form-control" placeholder="Contraseña" required>
+          <button type="submit" class="btn btn-primary" style="width:100%">Ingresar</button>
+        </form>
+      </div>
+      
+      <div id="register-form-container" class="auth-form" style="display:none">
+        <h2>Registrarse</h2>
+        <form id="register-form">
+          <input type="text" id="new-username" class="form-control" placeholder="Usuario" required>
+          <input type="text" id="new-contact" class="form-control" placeholder="Correo o contacto (opcional, recomendado para colaborar)">
+          <input type="password" id="new-password" class="form-control" placeholder="Contraseña" required>
+          <input type="password" id="confirm-password" class="form-control" placeholder="Confirmar Contraseña" required>
+          <button type="submit" class="btn btn-primary" style="width:100%">Registrarse</button>
+        </form>
+      </div>
+      
+      <p id="auth-message" class="auth-message"></p>
+    </div>
+  </div>
+  <!-- Modal Cambio de Contraseña (IDs corregidos) -->
+  <div id="change-password-modal" class="modal">
+    <div class="modal-content">
+      <div class="auth-form">
+        <h2>Cambiar Contraseña</h2>
+        <form id="change-password-form">
+          <div class="form-group">
+            <label for="change-current-password" class="form-label">Contraseña Actual</label>
+            <input type="password" id="change-current-password" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="change-new-password" class="form-label">Nueva Contraseña</label>
+            <input type="password" id="change-new-password" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="change-confirm-password" class="form-label">Confirmar Nueva Contraseña</label>
+            <input type="password" id="change-confirm-password" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Actualizar Contraseña</button>
+        </form>
+        <p id="change-password-message" class="auth-message"></p>
+      </div>
+    </div>
+  </div>
+  <script src="menu-toggle.js"></script> 
+<script src="proyectos.js"></script>
+</body>
+</html>
