@@ -86,6 +86,18 @@ app.post('/api/project', upload.array('files', 10), (req, res) => {
     res.status(500).json({ error: 'Error al crear el proyecto' });
   }
 });
+const path = require('path');
+// … tus otros app.use y endpoints …
+
+// Sirve index.html para la ruta raíz
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Finalmente…
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+});
 
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
