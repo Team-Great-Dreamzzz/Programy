@@ -26,7 +26,10 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'Public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
+// Sirve index.html para la ruta raíz
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Public', 'index.html'));
+});
 // GET /api/data
 app.get('/api/data', (req, res) => {
   try {
@@ -86,14 +89,10 @@ app.post('/api/project', upload.array('files', 10), (req, res) => {
     res.status(500).json({ error: 'Error al crear el proyecto' });
   }
 });
-const path = require('path');
-// … tus otros app.use y endpoints …
 
-// Sirve index.html para la ruta raíz
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'Public', 'index.html'));
-});
 
+const cors = require('cors');
+app.use(cors());
 // Finalmente…
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
