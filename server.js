@@ -89,10 +89,6 @@ app.post('/api/project', upload.array('files', 10), (req, res) => {
     res.status(500).json({ error: 'Error al crear el proyecto' });
   }
 });
-
-
-const cors = require('cors');
-app.use(cors());
 // Finalmente…
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
