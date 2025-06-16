@@ -48,7 +48,7 @@ ensureUploadsFolders();
 // 2) Middleware y configuración de Express
 // ---------------------------------------
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "Public")));
 
 // ---------------------------------------
 // 3) Funciones auxiliares para leer/escribir db.json
