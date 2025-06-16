@@ -4,12 +4,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ayuda | ProgramyX AU</title>
+  <title>Ayuda | ProgramyX AU</title><link id="dynamic-favicon" rel="icon" type="image/png" href="R.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <script src="ayuda.js" defer></script>
+  <script src="ayuda.js" defer></script><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MorphSVGPlugin.min.js"></script>
   <style>
-    /* Estilos para acordeón */
     .accordion {
       max-width: 800px;
       margin: 2rem auto;
@@ -53,6 +53,12 @@
   </style>
 </head>
 <body>
+<div id="preloader">
+  <div class="loader-wrapper">
+    <div class="loader"></div>
+  </div>    <div class="loading-text">Cargando<span class="dots"></span></div>
+</div>
+
   <header>
     <div class="logo-title" id="home-btn">
       <img src="image-1-GOrpAWkqrPq5QAE52eL.png" alt="Logo ProgramyX AU">
@@ -86,8 +92,13 @@
       <div class="accordion-item">
         <div class="accordion-header">Preguntas Frecuentes</div>
         <div class="accordion-content">
-          <p><strong>¿Cómo me registro?</strong><br>Haz clic en "Registrarse" en la esquina superior y completa el formulario.</p>
-          <p><strong>¿Puedo recuperar mi contraseña?</strong><br>En la página de inicio de sesión, selecciona "Olvidé mi contraseña" y sigue los pasos.</p>
+          <p><strong>¿Qué tipo de proyectos debería publicar?</strong><br>Comparte con todos cualquier proyecto personal o académico, de cualquier ámbito, incluso con un enlace externo si lo necesitas. Solo asegúrate de cumplir nuestras normas y deja volar tu imaginación. ¡Dale rienda suelta a tu creatividad!</p>
+          <p><strong>¿Es posible colaborar en proyectos de otros usuarios?</strong><br>¡Por supuesto! Puedes contactar al creador del proyecto y discutir una posible colaboración.</p>
+          <p><strong>¿Puedo eliminar un proyecto después de publicarlo?</strong><br>Sí, puedes gestionar y eliminar tu proyecto desde tu panel de usuario.</p>
+          <p><strong>¿Qué debo hacer si veo contenido inapropiado?</strong><br>Reporta el contenido a los administradores usando la opción de "reportar" en el proyecto, el problema debería ser resuelto a la brevedad.</p>
+         <p><strong>¿Puedo compartir mi proyecto en redes sociales?</strong><br>Sí, puedes compartir el enlace de tu proyecto directamente en tus redes sociales, página web o blog personal para obtener más visibilidad.</p>
+         <p><strong>¿Existe algún límite en la cantidad de proyectos que puedo publicar?</strong><br>No hay un límite específico, pero te recomendamos publicar solo aquellos que estén bien estructurados y listos para compartir.</p>
+         <p><strong>¿Qué tipo de formato se recomienda para presentar un proyecto?</strong><br>Puedes incluir texto, imágenes, enlaces y documentos. Asegúrate de que la información esté organizada para facilitar la comprensión.</p>
         </div>
       </div>
       <div class="accordion-item">
@@ -116,6 +127,6 @@
   <footer>
     &copy; 2025 ProgramyX AU. Todos los derechos reservados.
   </footer>
-  <script src="menu-toggle.js"></script>
+  <script src="menu-toggle.js"></script><script src="bola.js"></script>
 </body>
 </html>

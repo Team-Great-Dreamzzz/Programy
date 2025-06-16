@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ProgramyX AU - Gestión de Proyectos</title>
+  <title>ProgramyX AU - Gestión de Proyectos</title><link id="dynamic-favicon" rel="icon" type="image/png" href="R.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="styles.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet"><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MorphSVGPlugin.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -50,11 +51,6 @@
     .logo-title a {
       color: white;
       text-decoration: none;
-    }
-    
-    .logo-title img {
-      height: 40px;
-      border-radius: 8px;
     }
 
     body {
@@ -467,19 +463,23 @@
       100% { transform: rotate(360deg); }
     }
     /* Miniaturas de imágenes */
-    .project-thumbnail {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 5px;
-      margin-bottom: 1rem;
-      background-color: #f0f0f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #888;
-    }
-    
+.project-thumbnail {
+  width: 100%;
+  /* height fijo eliminado para respetar relación de aspecto */
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+}
+
+.project-thumbnail img {
+  width: 100%;
+  height: auto;          /* altura automática para no recortar */
+  object-fit: contain;   /* ajusta la imagen completa */
+  border-radius: 5px;
+}
+
     .project-thumbnail i {
       font-size: 3rem;
     }
@@ -568,7 +568,10 @@
       background-color: #95a5a6;
       color: white;
     }
-    
+      .status-busqueda {
+      background-color: #00d8e7;
+      color: white;
+    }
     .project-tech {
       display: inline-block;
       background-color: #e0e0e0;
@@ -707,7 +710,16 @@
 #change-password-btn:hover {
   background-color: #e67e22;
 }
-
+    /* Añadido: Scroll para modales grandes */
+    .modal-content {
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    /* Añadido: Prevenir solapamiento de elementos en modales */
+    .project-details {
+      padding: 20px;
+    }
 /* Asegurar que los modales no se solapen */
 .modal {
   z-index: 1001;
@@ -719,39 +731,6 @@
 
     header {
       flex-wrap: wrap;
-    }
-
-    .menu-toggle {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      cursor: pointer;
-    }
-
-    .menu-toggle span {
-      display: block;
-      width: 25px;
-      height: 3px;
-      background-color: white;
-      border-radius: 3px;
-    }
-
-    #nav {
-      display: none;
-      flex-direction: column;
-      width: 100%;
-      background-color: var(--color-guinda);
-    }
-
-    #nav.show {
-      display: flex;
-    }
-
-    #nav a {
-      padding: 1rem;
-      color: white;
-      text-align: center;
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .sidebar {
@@ -814,7 +793,13 @@
   </style>
 </head>
 <body>
-  <!-- Barra lateral -->
+<div id="preloader">
+  <div class="loader-wrapper">
+    <div class="loader"></div>
+  </div>
+      <div class="loading-text">Cargando<span class="dots"></span></div>
+</div>
+ <!-- Barra lateral -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-toggle" id="sidebar-toggle">
       <i class="fas fa-chevron-left"></i>
@@ -858,29 +843,36 @@
         <a href="ayuda.html">Ayuda</a>
         <a href="herramientas.html">Herramientas</a>
         <a href="Sobrenosotros.html">Sobre Nosotros</a>
+        <div class="menu-video-wrapper">
+        <video autoplay="" muted="" loop="" playsinline="">
+          <source src="menu-loop-video.mp4" type="video/mp4">
+          Tu navegador no admite el elemento de video.
+        </video>
+      </div>
       </nav>
-    </header>
+    <div id="login-button-container" style="display:none;">
+  <button id="open-login-btn" class="btn btn-success" style="margin-left: 1rem;">
+    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+  </button>
+</div>
+</header>
 
     <div class="content-header">
       <div id="user-info" class="user-info">
-  <p>Conectado como: <span id="current-user"></span> 
-    <button id="change-password-btn" class="btn btn-warning">Cambiar Contraseña</button>
-    <button id="logout-btn" class="btn btn-primary">Cerrar Sesión</button>
+        <p>Conectado como: <span id="current-user"></span> 
+          <button id="change-password-btn" class="btn btn-warning">Cambiar Contraseña</button>
+          <button id="logout-btn" class="btn btn-primary">Cerrar Sesión</button>
   </p>
 </div>
       <h1 id="section-title">Todos los Proyectos</h1>
-      <div id="user-info" class="user-info">
-        <p>Conectado como: <span id="current-user"></span> 
-          <button id="logout-btn" class="btn btn-primary">Cerrar Sesión</button>
-        </p>
-      </div>
+      
     </div>
 
     <div class="content-body">
       <!-- Sección: Todos los proyectos -->
       <div id="all-projects" class="section active">
         <div class="search-bar">
-          <input type="text" id="search-input" placeholder="Buscar proyectos por nombre, categoría, tecnología...">
+          <input type="text" id="search-input" placeholder="Busca proyectos épicos aquí...">
           <button id="search-btn" class="btn btn-primary">
             <i class="fas fa-search"></i> Buscar
           </button>
@@ -907,22 +899,22 @@
 <div id="create-project" class="section">
   <form id="project-form" class="project-form" enctype="multipart/form-data">
     <div class="form-group">
-      <label for="project-name" class="form-label">Nombre del proyecto</label>
+      <label for="project-name" class="form-label">Nombre del proyecto<span style="color: var(--color-danger);">*</span></label>
       <input type="text" id="project-name" name="name" class="form-control" placeholder="Ej: Mi aplicación web" required>
     </div>
 
     <div class="form-group">
-      <label for="project-category" class="form-label">Categoría</label>
+      <label for="project-category" class="form-label">Categoría<span style="color: var(--color-danger);">*</span></label>
       <input type="text" id="project-category" name="category" class="form-control" placeholder="Ej: Desarrollo Web, Diseño, etc.">
     </div>
 
     <div class="form-group">
-      <label for="project-desc" class="form-label">Descripción</label>
+      <label for="project-desc" class="form-label">Descripción<span style="color: var(--color-danger);">*</span></label>
       <textarea id="project-desc" name="description" class="form-control" placeholder="Describe tu proyecto en detalle..." required></textarea>
     </div>
 
     <div class="form-group">
-      <label for="project-technologies" class="form-label">Tecnologías utilizadas</label>
+      <label for="project-technologies" class="form-label">Tecnologías utilizadas<span style="color: var(--color-danger);">*</span></label>
       <input type="text" id="project-technologies" name="technologies" class="form-control" placeholder="Separadas por comas (HTML, CSS, JavaScript)">
     </div>
 
@@ -932,22 +924,30 @@
         <option value="en-progreso">En progreso</option>
         <option value="completado">Completado</option>
         <option value="abandonado">Abandonado</option>
+        <option value="busqueda">Buscando colaborador</option>
       </select>
     </div>
+          <!-- CORRECCIÓN: Input de miniatura con ID único -->
+          <div class="form-group">
+            <label for="project-thumbnail" class="form-label">Miniatura del proyecto <span style="color: var(--color-danger);">*</span></label>
+            <input type="file" id="project-thumbnail" name="thumbnail" class="form-control" accept="image/*" required>
+            <div id="thumbnail-preview" class="image-preview-container"></div>
+          </div>
 
-    <div class="form-group">
-      <label for="project-files" class="form-label">Archivos adjuntos</label>
-      <input type="file" id="project-files" name="files" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar,.7z,.mp3,.wav,.ogg">
-      <small class="text-muted">Puedes subir imágenes, documentos, archivos comprimidos o audios</small>
-    </div>
+          <!-- CORRECCIÓN: Input de archivos con ID único -->
+          <div class="form-group">
+            <label for="project-files" class="form-label">Archivos adjuntos</label>
+            <input type="file" id="project-files" name="files" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar,.7z,.mp3,.wav,.ogg">
+            <small class="text-muted">Puedes subir imágenes, documentos, archivos comprimidos o audios</small>
+          </div>
 
-    <div id="image-preview" class="image-preview-container"></div>
+          <div id="image-preview" class="image-preview-container"></div>
+          <button type="submit" class="btn btn-primary" id="submit-btn">
+            <i class="fas fa-paper-plane"></i> Publicar Proyecto
+          </button>
+        </form>
+      </div>
 
-    <button type="submit" class="btn btn-primary" id="submit-btn">
-      <i class="fas fa-paper-plane"></i> Publicar Proyecto
-    </button>
-  </form>
-</div>
 
       <!-- Nueva sección: Moderación -->
       <div id="moderation" class="section admin-only">
@@ -1067,6 +1067,6 @@
     </div>
   </div>
   <script src="menu-toggle.js"></script> 
-<script src="proyectos.js"></script>
+<script src="proyectos.js"></script><script src="bola.js"></script>
 </body>
 </html>

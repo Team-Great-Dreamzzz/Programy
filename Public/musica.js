@@ -34,3 +34,13 @@
       musica.play();
     }, { once: true });
   });
+function copiarCorreo() {
+  const correo = "programyx.au@gmail.com";
+  navigator.clipboard.writeText(correo)
+    .then(() => {
+      alert("Correo copiado al portapapeles.");
+    })
+    .catch(err => {
+      console.error("Error al copiar el correo:", err);
+    });
+}

@@ -1,15 +1,22 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sobre Nosotros | ProgramyX AU</title>
+  <link id="dynamic-favicon" rel="icon" type="image/png" href="R.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <script src="slider.js" defer></script>
+  <script src="slider.js" defer></script><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MorphSVGPlugin.min.js"></script>
 </head>
 <body>
+ <div id="preloader">
+  <div class="loader-wrapper">
+    <div class="loader"></div>
+  </div>    <div class="loading-text">Cargando<span class="dots"></span></div>
+</div>
+
   <header>
     <div class="logo-title" id="home-btn">
       <img src="image-1-GOrpAWkqrPq5QAE52eL.png" alt="Logo ProgramyX AU">
@@ -45,7 +52,7 @@
         Con el tiempo, entendimos que podíamos ir más allá. Decidimos transformar nuestra visión y ampliar el alcance del proyecto, dando paso a una plataforma que no solo enseña, sino que también impulsa. Hoy, ProgramyX AU busca brindar un espacio donde estudiantes y emprendedores puedan visibilizar y promocionar sus proyectos personales y académicos, construyendo una comunidad de apoyo mutuo y desarrollo constante.
       </p>
       <p>
-        Cada línea de código, cada animación y cada sección fue creada con dedicación por los integrantes de nuestro equipo: <strong>Jheanpier Corrales</strong>, <strong>Harry Chirinos</strong>, <strong>Alexander Alave</strong> y <strong>Grimaldo Paredes</strong>. Cuatro mentes distintas pero con un objetivo común: ayudar a que más ideas cobren vida.
+        Cada línea de código, cada animación y cada sección fue creada con dedicación. Cuatro mentes distintas pero con un objetivo común: ayudar a que más ideas cobren vida.
       </p>
     </section>
 
@@ -55,41 +62,45 @@
         <div class="team-card">
           <img src="avatar1.jpeg" alt="Jheanpier Corrales">
           <h3>Jheanpier Corrales</h3>
-          <p>Desarrollo e idea general</p><hr>
+          <p>Desarrollo front-end, arquitectura back-end e idea general <br><strong>Nota: Para ser mi segundo proyecto, nada mal.</strong></p><hr>
         </div>
         <div class="team-card">
           <img src="avatar2.png" alt="Harry Chirinos">
           <h3>Harry Chirinos</h3>
-          <p>Apoyo y testing de la beta</p><hr>
+          <p>Apoyo en la idea principal y testing de la beta</p><hr>
         </div>
         <div class="team-card">
           <img src="avatar4.png.jpg" alt="Alexander Alave">
           <h3>Alexander Alave</h3>
-          <p>Arquitecto backend y soporte técnico</p><hr>
+          <p>Promoción del servicio, elaboración portafolio del proyecto <br><strong>Nota: Básicamente solo vender humo</strong></p><hr>
         </div>
         <div class="team-card">
           <img src="avatar3.jpg" alt="Grimaldo Paredes">
           <h3>Grimaldo Paredes</h3>
-          <p>Tester QA y gestor de contenido</p><hr>
+          <p>Crítico, publicitario y elaboracion del portafolio</p><hr>
         </div>
       </div>
       <br>
-      <h1>Contáctanos! Sugerencias y opiniones :D</h1>
+      <h1>Contacto! Sugerencias y opiniones :D</h1>
   
       <section class="contact-section fade-in">
-        <div class="contact-block">
-          <div class="icon">
-            <img src="icons/gmail.svg" alt="Gmail">
-          </div>
-          <h2>Correo Electrónico</h2>
-          <p><a href="mailto:ejemplo@gmail.com">programyx.au@gmail.com</a></p>
-        </div>
+       <div class="contact-block">
+  <div class="icon">
+    <img src="icons/gmail.svg" alt="Gmail">
+  </div>
+  <h2>Correo Electrónico</h2>
+  <p>
+    <a href="#" onclick="copiarCorreo(); return false;">
+      programyx.au@gmail.com
+    </a>
+  </p>
+</div>
         <div class="contact-block">
           <div class="icon">
             <img src="icons/phone.svg" alt="Teléfono">
           </div>
           <h2>Teléfono/Whatsapp</h2>
-          <p><a href="tel:+521234567890">+51 922 387 831</a></p>
+          <p><a href="tel:+51922387831">+51 922 387 831</a></p>
         </div>
         <div class="contact-block">
           <div class="icon">
@@ -107,10 +118,10 @@
         </div>
       </section>
       <section class="game-section fade-in">
-        <h2>¡Mini Juego: Atrapa a Miku! 🎮</h2>
-        <p>Trata de atrapar a Miku y gana puntos ;D</p>
+        <h2>¡Mini Juego: Atrapa a Pearto! 🎮</h2>
+        <p>Trata de atraparla y gana puntos ;D</p>
         <div id="game-container">
-          <img id="game-logo" src="logo-placeholder.webp" alt="Logo de juego">
+          <img id="game-logo" src="https://yt3.googleusercontent.com/_NFbFSy3QKHKGivUOEk8Nv1ls9OmBe3Uu7j5c1i256kj_nUccYUiTc6qLswhTBWVWjpC8PLNc68=s900-c-k-c0x00ffffff-no-rj" alt="Logo de juego">
           <div id="score">Puntaje: 0</div>
         </div>
       </section>
@@ -119,5 +130,7 @@
     &copy; 2025 ProgramyX AU. Todos los derechos reservados.
   </footer>
   <script src="menu-toggle.js"></script>
+  <script src="musica.js"></script>
+  <script src="bola.js"></script>
 </body>
 </html>

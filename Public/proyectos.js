@@ -1,5 +1,19 @@
 // proyectos.js
 
+// Mostrar loader mientras se cargan proyectos
+function showLoader(container) {
+  container.innerHTML = '<div class="no-results"><i class="fas fa-spinner fa-spin fa-2x"></i><h3>Cargando proyectos...</h3></div>';
+}
+
+// Mostrar contador de resultados
+function showResultCount(container, count, term = "") {
+  const info = document.createElement("div");
+  info.style.marginBottom = "1rem";
+  info.innerHTML = `<strong>Se encontraron ${count} proyecto${count !== 1 ? 's' : ''}${term ? ` para "<em>${term}</em>"` : ''}</strong>`;
+  container.prepend(info);
+}
+
+
 document.addEventListener("DOMContentLoaded", async () => {
   // API endpoints
   const API_DATA = "/api/data";
@@ -7,7 +21,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Elementos del DOM
   const elements = {
-    sidebar: document.getElementById("sidebar"),
+    
+    loginButtonContainer: document.getElementById("login-button-container"),
+    openLoginBtn: document.getElementById("open-login-btn"),sidebar: document.getElementById("sidebar"),
     sidebarToggle: document.getElementById("sidebar-toggle"),
     menuItems: document.querySelectorAll(".menu-item"),
     sections: document.querySelectorAll(".section"),
@@ -20,6 +36,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     loginForm: document.getElementById("login-form"),
     registerForm: document.getElementById("register-form"),
     authModal: document.getElementById("auth-modal"),
+    thumbnailInput: document.getElementById('project-thumbnail'),
+    thumbnailPreview: document.getElementById('thumbnail-preview'),
     projectDetailsModal: document.getElementById("project-details-modal"),
     projectDetailsContent: document.getElementById("project-details-content"),
     logoutBtn: document.getElementById("logout-btn"),
@@ -65,6 +83,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Inicialización
   await init();
+  const urlParams = new URLSearchParams(window.location.search);
+  const searchTerm = urlParams.get("search");
+  if (searchTerm) {
+    elements.searchInput.value = searchTerm;
+    renderAllProjects(searchTerm);
+  }
+
 
   async function init() {
     await loadData();
@@ -129,10 +154,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Configuración de listeners
   function setupEventListeners() {
+    if (elements.openLoginBtn) {
+      elements.openLoginBtn.addEventListener("click", () => {
+        elements.authModal.classList.add("active");
+        document.body.style.overflow = "hidden";
+        switchAuthTab("login");
+      });
+    }
     // Toggle sidebar
     if (elements.sidebarToggle) {
       elements.sidebarToggle.addEventListener("click", toggleSidebar);
-    }
+    
+  // Cerrar modal al hacer clic fuera del contenido
+  document.querySelectorAll(".modal").forEach(modal => {
+    modal.addEventListener("click", e => {
+      if (e.target === modal) {
+        modal.classList.remove("active");
+        document.body.style.overflow = "auto";
+      }
+    });
+  });
+}
 
     // Cambiar sección
     elements.menuItems.forEach(item => {
@@ -166,7 +208,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (elements.fileInput) {
       elements.fileInput.addEventListener("change", handleFileSelect);
     }
-
+        // Preview imagen de miniatura
+    if (elements.thumbnailInput) {
+      elements.thumbnailInput.addEventListener("change", handleThumbnailSelect);
+    }
     // Cerrar modales
     elements.closeModals.forEach(btn => {
       btn.addEventListener("click", () => {
@@ -216,12 +261,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       elements.changePasswordForm.addEventListener("submit", handleChangePassword);
     }
 
-    // Mobile menu
-    const menuToggle = document.getElementById("menu-toggle");
-    const nav = document.getElementById("nav");
-    if (menuToggle && nav) {
-      menuToggle.addEventListener("click", () => nav.classList.toggle("show"));
-    }
   }
 
   // Colapsar/expandir sidebar
@@ -237,6 +276,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (elements.sidebar.classList.contains("sidebar-collapsed")) {
       icon.classList.replace("fa-chevron-left", "fa-chevron-right");
     } else {
+      
       icon.classList.replace("fa-chevron-right", "fa-chevron-left");
     }
   }
@@ -268,6 +308,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       elements.menuItems.forEach(i => i.classList.remove("active"));
       document.querySelector('[data-section="all-projects"]').classList.add("active");
     } else {
+      
       showAuthMessage("Usuario o contraseña incorrectos", "error");
     }
   }
@@ -321,32 +362,39 @@ document.addEventListener("DOMContentLoaded", async () => {
       elements.loginFormContainer.style.display = "block";
       elements.registerFormContainer.style.display = "none";
     } else {
+      
       elements.loginFormContainer.style.display = "none";
       elements.registerFormContainer.style.display = "block";
     }
   }
 
   function checkAuthState() {
-    if (data.currentUser) {
-      elements.currentUserSpan.textContent = data.currentUser;
-      const user = data.users.find(u => u.username === data.currentUser);
-      data.isAdmin = !!(user && user.isAdmin);
-      if (data.isAdmin) document.body.classList.add("admin-mode");
-      else document.body.classList.remove("admin-mode");
-      elements.userInfo.style.display = "block";
-      elements.authModal.classList.remove("active");
-      document.body.style.overflow = "auto";
-    } else {
-      data.currentUser = null;
-      data.isAdmin = false;
-      document.body.classList.remove("admin-mode");
-      elements.userInfo.style.display = "none";
-      elements.authModal.classList.add("active");
-      document.body.style.overflow = "hidden";
+  if (data.currentUser) {
+    if (elements.loginButtonContainer) {
+      elements.loginButtonContainer.style.display = "none";
     }
+    elements.currentUserSpan.textContent = data.currentUser;
+    const user = data.users.find(u => u.username === data.currentUser);
+    data.isAdmin = !!(user && user.isAdmin);
+    if (data.isAdmin) document.body.classList.add("admin-mode");
+    else document.body.classList.remove("admin-mode");
+    elements.userInfo.style.display = "block";
+    if (elements.authModal) elements.authModal.classList.remove("active");
+    document.body.style.overflow = "auto";
+  } else {
+    if (elements.loginButtonContainer) {
+      elements.loginButtonContainer.style.display = "block";
+    }
+    data.currentUser = null;
+    data.isAdmin = false;
+    document.body.classList.remove("admin-mode");
+    elements.userInfo.style.display = "none";
+    if (elements.authModal) elements.authModal.classList.add("active");
+    document.body.style.overflow = "hidden";
   }
+}
 
-  // Preview de imágenes
+ // Preview de imágenes adjuntas
   function handleFileSelect(e) {
     elements.imagePreview.innerHTML = "";
     for (let file of e.target.files) {
@@ -363,6 +411,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  // Preview de miniatura
+  function handleThumbnailSelect(e) {
+    elements.thumbnailPreview.innerHTML = "";
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = evt => {
+        const img = document.createElement("img");
+        img.src = evt.target.result;
+        img.classList.add("image-preview");
+        elements.thumbnailPreview.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   // Crear proyecto (con Multer)
   async function handleProjectSubmit(e) {
     e.preventDefault();
@@ -370,14 +434,37 @@ document.addEventListener("DOMContentLoaded", async () => {
       alert("Debes iniciar sesión para publicar un proyecto");
       return;
     }
+
+    //Mover la declaración de form al inicio
     const form = elements.projectForm;
+    
+    // Validar campos obligatorios
+    const name = form["project-name"].value.trim();
+    const description = form["project-desc"].value.trim();
+    
+    if (!name || !description) {
+      alert("Nombre y descripción son campos obligatorios");
+      return;
+    }
+
+    // Validar miniatura
+    if (!elements.thumbnailInput.files || elements.thumbnailInput.files.length === 0) {
+      alert("Debes seleccionar una miniatura para tu proyecto");
+      return;
+    }
+    
     const formData = new FormData();
-    formData.append("name", form["project-name"].value.trim());
-    formData.append("description", form["project-desc"].value.trim());
+    formData.append("name", name);
+    formData.append("description", description);
     formData.append("category", form["project-category"].value.trim());
     formData.append("technologies", form["project-technologies"].value.trim());
     formData.append("status", form["project-status"].value);
     formData.append("author", data.currentUser);
+
+    // Agregar la miniatura al FormData
+    if (elements.thumbnailInput.files[0]) {
+      formData.append("thumbnail", elements.thumbnailInput.files[0]);
+    }
 
     const files = elements.fileInput.files;
     for (let f of files) {
@@ -388,18 +475,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     elements.submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
 
     try {
-      const resp = await fetch(API_PROJECT, {
-        method: "POST",
-        body: formData
-      });
-      const resJson = await resp.json();
-      if (!resp.ok) {
-        alert(resJson.error || "Error al guardar proyecto");
-        return;
-      }
+    const resp = await fetch(API_PROJECT, {
+  method: "POST",
+  body: formData
+});
+
+if (!resp.ok) {
+  // Intentamos leer texto plano para mostrar la causa
+  const texto = await resp.text();
+  console.error("POST /api/project devolvió status:", resp.status, texto);
+  alert("Error al guardar proyecto. Revisa la consola para más detalles.");
+  return;
+}
+
+const resJson = await resp.json();
+alert("¡Proyecto publicado con éxito!");
+
       alert("¡Proyecto publicado con éxito!");
       form.reset();
       elements.imagePreview.innerHTML = "";
+      elements.thumbnailPreview.innerHTML = ""; // Limpiar previsualización
       await loadData();
       renderAllProjects();
     } catch (err) {
@@ -411,35 +506,44 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+
   // Renderizar todos los proyectos
   function renderAllProjects(searchTerm = "") {
-    let list = [...data.projects];
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      list = list.filter(p =>
-        p.name.toLowerCase().includes(term) ||
-        (p.description && p.description.toLowerCase().includes(term)) ||
-        (p.category && p.category.toLowerCase().includes(term)) ||
-        (p.technologies && p.technologies.some(t => t.toLowerCase().includes(term)))
-      );
-    }
-    if (list.length === 0) {
-      elements.projectsList.innerHTML = `
-        <div class="no-results">
-          <i class="fas fa-search fa-2x"></i>
-          <h3>No se encontraron proyectos</h3>
-          <p>Intenta con otros términos de búsqueda</p>
-        </div>`;
-      return;
-    }
-    elements.projectsList.innerHTML = list.map(p => {
-      const reportCount = data.reports.filter(r => r.projectId === p.id && r.status === "pendiente").length;
-      const firstImage = p.files && p.files.length && p.files.find(f => f.mimeType.startsWith("image/"));
-      return `
+  showLoader(elements.projectsList);
+  let list = [...data.projects];
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    list = list.filter(p =>
+      p.name.toLowerCase().includes(term) ||
+      (p.description && p.description.toLowerCase().includes(term)) ||
+      (p.category && p.category.toLowerCase().includes(term)) ||
+      (p.technologies && p.technologies.some(t => t.toLowerCase().includes(term)))
+    );
+  }
+
+ if (list.length === 0) {
+  elements.projectsList.innerHTML = `
+    <div class="no-results">
+      <i class="fas fa-search fa-2x"></i>
+      <h3>No se encontraron proyectos</h3>
+      <p>Intenta con otros términos de búsqueda</p>
+      <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmF2cHJlNXYzNHpyMzlnNG56MTNzZnczOWZoNjFhanVpODFwbGk4YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7b01Wv8oROOFa/giphy.gif" alt="Nada encontrado" style="margin-top: 1rem; width: 120px; display: block; margin-left: auto; margin-right: auto;">
+    </div>`;
+  return;
+}
+
+  elements.projectsList.innerHTML = "";
+  showResultCount(elements.projectsList, list.length, searchTerm);
+  elements.projectsList.innerHTML += list.map(p => {
+    const reportCount = data.reports.filter(r => r.projectId === p.id && r.status === "pendiente").length;
+    const firstImage = p.files && p.files.length && p.files.find(f => f.mimeType.startsWith("image/"));
+    const imgSrc = p.thumbnailPath || (firstImage && firstImage.filePath);
+    
+    return `
       <div class="project-card" data-id="${p.id}">
         ${reportCount > 0 ? `<div class="reported-badge">${reportCount} Reporte${reportCount > 1 ? 's' : ''}</div>` : ''}
-        ${firstImage
-          ? `<img src="${firstImage.filePath}" alt="${p.name}" class="project-thumbnail">`
+        ${imgSrc
+          ? `<img src="${imgSrc}" alt="${p.name}" class="project-thumbnail">`
           : `<div class="project-thumbnail"><i class="fas fa-image"></i></div>`}
         <h3>${p.name}</h3>
         <p>${truncateText(p.description, 100)}</p>
@@ -457,40 +561,47 @@ document.addEventListener("DOMContentLoaded", async () => {
             : ''}
         </div>
       </div>`;
-    }).join("");
-    setupProjectCardEvents();
-  }
+  }).join("");
+
+  setupProjectCardEvents();
+}
 
   // Renderizar proyectos del usuario
-  function renderUserProjects(searchTerm = "") {
-    if (!data.currentUser) return;
-    let list = data.projects.filter(p => p.author === data.currentUser);
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      list = list.filter(p =>
-        p.name.toLowerCase().includes(term) ||
-        (p.description && p.description.toLowerCase().includes(term)) ||
-        (p.category && p.category.toLowerCase().includes(term)) ||
-        (p.technologies && p.technologies.some(t => t.toLowerCase().includes(term)))
-      );
-    }
-    if (list.length === 0) {
-      elements.userProjectsList.innerHTML = `
-        <div class="no-results">
-          <i class="fas fa-search fa-2x"></i>
-          <h3>No se encontraron proyectos</h3>
-          <p>${searchTerm ? 'Intenta con otros términos de búsqueda' : 'Aún no has creado proyectos'}</p>
-        </div>`;
-      return;
-    }
-    elements.userProjectsList.innerHTML = list.map(p => {
-      const reportCount = data.reports.filter(r => r.projectId === p.id && r.status === "pendiente").length;
-      const firstImage = p.files && p.files.length && p.files.find(f => f.mimeType.startsWith("image/"));
-      return `
+ function renderUserProjects(searchTerm = "") {
+  if (!data.currentUser) return;
+
+  let list = data.projects.filter(p => p.author === data.currentUser);
+
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    list = list.filter(p =>
+      p.name.toLowerCase().includes(term) ||
+      (p.description && p.description.toLowerCase().includes(term)) ||
+      (p.category && p.category.toLowerCase().includes(term)) ||
+      (p.technologies && p.technologies.some(t => t.toLowerCase().includes(term)))
+    );
+  }
+
+  if (list.length === 0) {
+    elements.userProjectsList.innerHTML = `
+      <div class="no-results">
+        <i class="fas fa-search fa-2x"></i>
+        <h3>No se encontraron proyectos</h3>
+        <p>${searchTerm ? 'Intenta con otros términos de búsqueda' : 'Aún no has creado proyectos'}</p><img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmF2cHJlNXYzNHpyMzlnNG56MTNzZnczOWZoNjFhanVpODFwbGk4YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7b01Wv8oROOFa/giphy.gif" alt="Nada encontrado" style="margin-top: 1rem; width: 120px; display: block; margin-left: auto; margin-right: auto;">
+      </div>`;
+    return;
+  }
+
+  elements.userProjectsList.innerHTML = list.map(p => {
+    const reportCount = data.reports.filter(r => r.projectId === p.id && r.status === "pendiente").length;
+    const firstImage = p.files && p.files.length && p.files.find(f => f.mimeType.startsWith("image/"));
+    const imgSrc = p.thumbnailPath || (firstImage && firstImage.filePath);
+
+    return `
       <div class="project-card" data-id="${p.id}">
         ${reportCount > 0 ? `<div class="reported-badge">${reportCount} Reporte${reportCount > 1 ? 's' : ''}</div>` : ''}
-        ${firstImage
-          ? `<img src="${firstImage.filePath}" alt="${p.name}" class="project-thumbnail">`
+        ${imgSrc
+          ? `<img src="${imgSrc}" alt="${p.name}" class="project-thumbnail">`
           : `<div class="project-thumbnail"><i class="fas fa-image"></i></div>`}
         <h3>${p.name}</h3>
         <p>${truncateText(p.description, 100)}</p>
@@ -502,9 +613,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           <button class="btn btn-danger delete-btn" data-id="${p.id}"><i class="fas fa-trash"></i> Eliminar</button>
         </div>
       </div>`;
-    }).join("");
-    setupProjectCardEvents();
-  }
+  }).join("");
+
+  setupProjectCardEvents();
+}
+
 
   // Agregar eventos a tarjetas
   function setupProjectCardEvents() {
@@ -517,19 +630,36 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     document.querySelectorAll(".delete-btn").forEach(btn => {
-      btn.addEventListener("click", async e => {
-        e.stopPropagation();
-        if (!confirm("¿Seguro que deseas eliminar?")) return;
-        const pid = btn.dataset.id;
-        data.projects = data.projects.filter(p => p.id !== pid);
-        await saveData();
-        renderAllProjects();
-        renderUserProjects();
-        if (elements.projectDetailsModal) {
-          elements.projectDetailsModal.classList.remove("active");
-          document.body.style.overflow = "auto";
-        }
-      });
+btn.addEventListener("click", async e => {
+  e.stopPropagation();
+  if (!confirm("¿Seguro que deseas eliminar?")) return;
+  const pid = btn.dataset.id;
+
+  // Llamamos al DELETE del backend
+  try {
+    const resp = await fetch(`/api/project/${pid}`, { method: "DELETE" });
+    if (!resp.ok) {
+      const txt = await resp.text();
+      console.error("Error al eliminar proyecto:", resp.status, txt);
+      return alert("Error eliminando el proyecto. Consulta la consola.");
+    }
+    // Si todo salió bien, recargamos la data desde el servidor
+    await loadData();  // Lee de nuevo /api/data
+    renderAllProjects();
+    renderUserProjects();
+    // Si estabas en el modal de detalles, ciérralo:
+    const modal = document.getElementById("project-details-modal");
+    if (modal) {
+      modal.classList.remove("active");
+      document.body.style.overflow = "auto";
+    }
+    alert("Proyecto eliminado correctamente");
+  } catch (err) {
+    console.error("Excepción al eliminar proyecto:", err);
+    alert("Error en la petición de eliminación. Ver consola.");
+  }
+});
+
     });
 
     document.querySelectorAll(".report-btn").forEach(btn => {
@@ -589,6 +719,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <h3>No hay reportes pendientes</h3>
         </div>`;
     } else {
+      
       elements.reportsList.innerHTML = pendientes.map(r => {
         const proj = data.projects.find(p => p.id === r.projectId);
         const date = new Date(r.reportedAt).toLocaleDateString("es-ES", {
@@ -627,6 +758,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <h3>No hay reportes resueltos</h3>
         </div>`;
     } else {
+      
       elements.resolvedReportsList.innerHTML = resueltos.map(r => {
         const proj = data.projects.find(p => p.id === r.projectId);
         const resolvedAt = new Date(r.resolvedAt).toLocaleDateString("es-ES", {
@@ -730,7 +862,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     elements.projectDetailsContent.innerHTML = `
-      <h2>${project.name}</h2>
+      ${project.thumbnailPath
+  ? `<img src="${project.thumbnailPath}" alt="${project.name}" class="project-thumbnail" style="max-width:100%;border-radius:8px;margin-bottom:1rem;">`
+  : ''}
+<h2>${project.name}</h2>
       <p><strong>Categoría:</strong> ${project.category || "No especificada"}</p>
       <p><strong>Estado:</strong> <span class="project-status ${getStatusClass(project.status)}">${getStatusText(project.status)}</span></p>
       <p><strong>Publicado por:</strong> ${project.author}</p>
@@ -834,22 +969,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.body.style.overflow = "hidden";
   }
 
-  function getStatusText(status) {
-    switch (status) {
-      case "en-progreso": return "En progreso";
-      case "completado": return "Completado";
-      case "abandonado": return "Abandonado";
-      default: return status;
-    }
+function getStatusText(status) {
+  switch (status) {
+    case "en-progreso": return "En progreso";
+    case "completado": return "Completado";
+    case "abandonado": return "Abandonado";
+    case "busqueda": return "Buscando colaborador";
+    default: return status;
   }
-  function getStatusClass(status) {
-    switch (status) {
-      case "en-progreso": return "status-en-progreso";
-      case "completado": return "status-completado";
-      case "abandonado": return "status-abandonado";
-      default: return "";
-    }
+}
+
+function getStatusClass(status) {
+  switch (status) {
+    case "en-progreso": return "status-en-progreso";
+    case "completado": return "status-completado";
+    case "abandonado": return "status-abandonado";
+    case "busqueda": return "status-busqueda";
+    default: return "";
   }
+}
+
   function truncateText(text, maxLen) {
     return text.length > maxLen ? text.substring(0, maxLen) + "..." : text;
   }
@@ -871,6 +1010,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <h3>No hay reportes pendientes</h3>
         </div>`;
     } else {
+      
       elements.reportsList.innerHTML = pendientes.map(r => {
         const proj = data.projects.find(p => p.id === r.projectId);
         const date = new Date(r.reportedAt).toLocaleDateString("es-ES", {
@@ -912,6 +1052,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <h3>No hay reportes resueltos</h3>
         </div>`;
     } else {
+      
       elements.resolvedReportsList.innerHTML = resueltos.map(r => {
         const proj = data.projects.find(p => p.id === r.projectId);
         const date = new Date(r.resolvedAt).toLocaleDateString("es-ES", {
@@ -1027,6 +1168,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         elements.changePasswordMessage.textContent = "";
       }, 2000);
     } else {
+      
       showChangePasswordMessage("Error guardando en servidor", "error");
     }
     btn.disabled = false;

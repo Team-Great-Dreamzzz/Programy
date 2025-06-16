@@ -4,11 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ProgramyX AU</title>
+<link id="dynamic-favicon" rel="icon" type="image/png" href="R.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MorphSVGPlugin.min.js"></script>
 </head>
 <body>
-  <header>
+ <div id="preloader">
+  <div class="loader-wrapper">
+    <div class="loader"></div>
+  </div>    <div class="loading-text">Cargando<span class="dots"></span></div>
+</div>
+
+ <header>
     <div class="logo-title" id="home-btn">
       <img src="image-1-GOrpAWkqrPq5QAE52eL.png" alt="Logo ProgramyX AU">
       <a href="index.html">ProgramyX AU</a>
@@ -37,8 +45,8 @@
     <div class="hero-bg-parallax" id="hero-bg"></div>
     <div class="hero-container">
       <h1 class="hero-title show">Descubre el talento estudiantil</h1>
-      <form class="hero-form">
-        <input type="text" placeholder="Buscar proyectos..." aria-label="Buscar">
+      <form class="hero-form" id="index-search-form">
+        <input type="text" id="index-search-input" placeholder="Buscar proyectos..." aria-label="Buscar">
         <button class="submit"><b>Buscar</b></button>
       </form>
     </div>
@@ -98,5 +106,20 @@
 <script src="scroll.js"></script>
 <script src="slider.js"></script>
 <script src="menu-toggle.js"></script>
+
+<script>
+  document.getElementById("index-search-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const term = document.getElementById("index-search-input").value.trim();
+    if (term) {
+      const encoded = encodeURIComponent(term);
+      window.location.href = `proyectos.html?search=${encoded}`;
+    } else {
+      window.location.href = "proyectos.html";
+    }
+  });
+</script>
+<script src="bola.js"></script>
 </body>
+
 </html>
