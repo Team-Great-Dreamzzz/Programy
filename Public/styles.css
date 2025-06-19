@@ -81,14 +81,31 @@ header {
   align-items: center;
   border-bottom: 2px solid var(--color-guinda);
 }
-
+.hero-gradient-transition {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 350px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 10%,
+    rgba(255, 255, 255, 0.404) 25%,
+    rgba(255, 255, 255, 0.705) 40%,
+    rgba(255, 255, 255, 0.89) 60%,
+    rgba(255, 255, 255, 0.986) 80%,
+    #ffffff 90%,
+    #ffffff 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
 /* MAIN */
 main {
   padding: 5rem;
   background: rgb(255, 255, 255);
   color: #000000;
 }
-
 /* FOOTER */
 footer {
   background-color: #ddd;
@@ -202,27 +219,42 @@ section h2 {
   flex-wrap: wrap;
   margin: 3rem 0;
   gap: 2rem;
+    user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 .info-block.reverse {
   flex-direction: row-reverse;
   margin-top: 5%;
+    user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 .info-text {
   flex: 1 1 50%;
   min-width: 260px;
+    user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 .info-text h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
   color: rgb(0, 0, 0);
+    user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 .info-text p {
   font-size: 1.1rem;
   line-height: 1.6;
+    user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 .info-image {
@@ -231,12 +263,18 @@ section h2 {
   text-align: center;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   color: #000000;
+    user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 .info-image img {
   max-width: 100%;
   height: auto;
   border-radius: 12px;
+    user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
@@ -250,6 +288,7 @@ section h2 {
   justify-content: center;
   text-align: center;
   color: white;
+  position: relative;
 }
 
 .hero-bg-parallax {
@@ -273,6 +312,9 @@ section h2 {
   padding: 2rem;
   border-radius: 10px;
   animation: fadeInUp 1.5s ease;
+    user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 .hero-content {
@@ -287,6 +329,9 @@ section h2 {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 2rem;
+    user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 .hero-text {
@@ -454,12 +499,15 @@ section h2 {
 
 /* SECCIÓN DE JUEGO */
 .game-section {
+    user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
   margin-top: 4rem;
   text-align: center;
-  background: #fffbe6;
+  background: #ffffff;
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 5 8px 16px rgba(0, 0, 0, 0.1);
   color: #000;
   animation-delay: 0s;
 }
@@ -468,7 +516,7 @@ section h2 {
   position: relative;
   width: 100%;
   height: 250px;
-  border: 2px dashed #531b1b;
+  border: 3.5px dashed #682121;
   margin: 1.5rem auto;
   overflow: hidden;
   border-radius: 8px;
@@ -487,6 +535,9 @@ section h2 {
   font-weight: bold;
   margin-top: 1rem;
   color: #000;
+}
+img {
+  -webkit-user-drag: none;
 }
 
 /* EFECTOS ESPECIALES */
@@ -1133,6 +1184,9 @@ section h2 {
       border: none;
       cursor: pointer;
       font-weight: 600;
+        user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
     }
     
     .projects-grid {

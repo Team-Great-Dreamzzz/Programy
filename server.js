@@ -48,6 +48,7 @@ ensureUploadsFolders();
 // 2) Middleware y configuración de Express
 // ---------------------------------------
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "Public")));
 
 // ---------------------------------------
@@ -70,12 +71,14 @@ function readDB() {
 function writeDB(data) {
   try {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), "utf8");
+    console.log("✅ db.json actualizado");
     return true;
   } catch (err) {
-    console.error("Error escribiendo db.json:", err);
+    console.error("❌ Error escribiendo db.json:", err);
     return false;
   }
 }
+
 
 // ---------------------------------------
 // 4) Rutas del API
@@ -100,7 +103,7 @@ app.put("/api/data", (req, res) => {
   res.json({ message: "Datos guardados correctamente" });
 });
 
-// POST /api/project → crea un proyecto (miniatura + archivos)
+// POST /api/project → crea un proyecto (ahora con link y comentarios)
 app.post(
   "/api/project",
   upload.fields([
@@ -110,7 +113,7 @@ app.post(
   (req, res) => {
     try {
       const db = readDB();
-      const { name, description, category, technologies, status, author } = req.body;
+      const { name, description, category, technologies, status, author, link } = req.body;
 
       // Validaciones básicas
       if (!name || !description || !author) {
@@ -146,8 +149,10 @@ app.post(
           : [],
         status: status || "en-progreso",
         author,
+        link: link || "", // Nuevo campo: link
         thumbnailPath,
         files: filesArray,
+        comments: [],     // Nuevo campo: comentarios inicializados
         createdAt: new Date().toISOString()
       };
 
@@ -180,7 +185,6 @@ app.delete("/api/project/:id", (req, res) => {
 
     // 1) Borrar miniatura si existe
     if (proyecto.thumbnailPath) {
-      // thumbnailPath es algo como "/uploads/thumbnails/12345_nombre.png"
       const thumbDiskPath = path.join(__dirname, proyecto.thumbnailPath);
       if (fs.existsSync(thumbDiskPath)) {
         fs.unlinkSync(thumbDiskPath);
@@ -191,7 +195,6 @@ app.delete("/api/project/:id", (req, res) => {
     if (Array.isArray(proyecto.files)) {
       proyecto.files.forEach(f => {
         if (f.filePath) {
-          // filePath es "/uploads/files/12345_archivo.ext"
           const diskPath = path.join(__dirname, f.filePath);
           if (fs.existsSync(diskPath)) {
             fs.unlinkSync(diskPath);
@@ -210,6 +213,98 @@ app.delete("/api/project/:id", (req, res) => {
     return res.json({ success: true, message: "Proyecto y archivos eliminados" });
   } catch (err) {
     console.error("Error en DELETE /api/project/:id:", err);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+// POST /api/project/:id/comment → Agrega comentarios a un proyecto
+app.post("/api/project/:id/comment", (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const { author, content } = req.body;
+    
+    if (!author || !content) {
+      return res.status(400).json({ error: "Faltan autor o contenido del comentario" });
+    }
+
+    const db = readDB();
+    const project = db.projects.find(p => p.id === projectId);
+    
+    if (!project) {
+      return res.status(404).json({ error: "Proyecto no encontrado" });
+    }
+
+    // Asegurar que exista el array de comentarios
+    if (!Array.isArray(project.comments)) {
+      project.comments = [];
+    }
+
+    const newComment = {
+      id: Date.now().toString(),
+      author,
+      content,
+      createdAt: new Date().toISOString()
+    };
+
+    project.comments.push(newComment);
+    const okWrite = writeDB(db);
+    
+    if (!okWrite) {
+      return res.status(500).json({ error: "Error al guardar el comentario" });
+    }
+
+    res.json({ success: true, comment: newComment });
+  } catch (err) {
+    console.error("Error en POST /api/project/:id/comment:", err);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+// DELETE /api/project/:projectId/comment/:commentId → elimina un comentario
+app.delete("/api/project/:projectId/comment/:commentId", (req, res) => {
+  try {
+    const projectId = req.params.projectId;
+    const commentId = req.params.commentId;
+    const { currentUser, isAdmin } = req.body; // Recibimos usuario y rol
+
+    if (!currentUser) {
+      return res.status(401).json({ error: "No autorizado" });
+    }
+
+    const db = readDB();
+    const project = db.projects.find(p => p.id === projectId);
+    
+    if (!project) {
+      return res.status(404).json({ error: "Proyecto no encontrado" });
+    }
+
+    // Asegurar que exista el array de comentarios
+    if (!Array.isArray(project.comments)) {
+      return res.status(404).json({ error: "No hay comentarios" });
+    }
+
+    const commentIndex = project.comments.findIndex(c => c.id === commentId);
+    if (commentIndex === -1) {
+      return res.status(404).json({ error: "Comentario no encontrado" });
+    }
+
+    const comment = project.comments[commentIndex];
+
+    // Verificar permisos: solo el autor o un admin puede borrar
+    if (comment.author !== currentUser && !isAdmin) {
+      return res.status(403).json({ error: "No tienes permiso para eliminar este comentario" });
+    }
+
+    // Eliminar el comentario
+    project.comments.splice(commentIndex, 1);
+    const okWrite = writeDB(db);
+    
+    if (!okWrite) {
+      return res.status(500).json({ error: "Error al guardar los cambios" });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error en DELETE /api/project/:projectId/comment/:commentId:", err);
     return res.status(500).json({ error: "Error interno del servidor" });
   }
 });

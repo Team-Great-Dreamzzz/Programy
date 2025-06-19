@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     topK: 40,
     maxOutputTokens: 2048
   };
-
+  const systemPrompt = `Eres un asistente útil, amigable, y profesional. No te presentes ni saludes a menos que te lo pidan o saluden. Te llamas Programy y siempre respondes de manera amigable y algo informal.`;
   // ========== ELEMENTOS DEL DOM ==========
   const chatContainer = document.getElementById('chat-container') || createChatUI();
   const chatMessages = document.getElementById('chat-messages');
@@ -122,30 +122,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function queryGeminiAPI(prompt) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
-    
-    const data = {
-      generationConfig,
-      contents: [{
-        role: 'user',
-        parts: [{ text: prompt }]
+async function queryGeminiAPI(prompt) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
+  
+  const data = {
+    generationConfig,
+    contents: [{
+      role: 'user',
+      parts: [{
+        text: `${systemPrompt}\n\nUsuario: ${prompt}`
       }]
-    };
+    }]
+  };
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || `Error HTTP: ${response.status}`);
-    }
-    
-    return response.json();
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || `Error HTTP: ${response.status}`);
   }
+
+  return response.json();
+}
+
 
   function processAPIResponse(response) {
     if (!response.candidates?.[0]?.content?.parts?.[0]?.text) {

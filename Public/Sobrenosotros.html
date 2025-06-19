@@ -81,7 +81,7 @@
         </div>
       </div>
       <br>
-      <h1>Contacto! Sugerencias y opiniones :D</h1>
+      <h1>Contacto! Sugerencias información y opiniones :D</h1>
   
       <section class="contact-section fade-in">
        <div class="contact-block">
@@ -121,7 +121,7 @@
         <h2>¡Mini Juego: Atrapa a Pearto! 🎮</h2>
         <p>Trata de atraparla y gana puntos ;D</p>
         <div id="game-container">
-          <img id="game-logo" src="https://yt3.googleusercontent.com/_NFbFSy3QKHKGivUOEk8Nv1ls9OmBe3Uu7j5c1i256kj_nUccYUiTc6qLswhTBWVWjpC8PLNc68=s900-c-k-c0x00ffffff-no-rj" alt="Logo de juego">
+          <img id="game-logo" src="OIP__3_-removebg-preview.png" alt="Logo de juego">
           <div id="score">Puntaje: 0</div>
         </div>
       </section>
@@ -132,5 +132,25 @@
   <script src="menu-toggle.js"></script>
   <script src="musica.js"></script>
   <script src="bola.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+<script>
+  // Inicializar Lenis
+  const lenis = new Lenis({
+    duration: 1.3,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smooth: true
+  });
+
+  // Para que Lenis actualice ScrollTrigger (de GSAP)
+  lenis.on('scroll', ScrollTrigger.update);
+
+  // Loop de animación (usa GSAP como loop driver)
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+  gsap.ticker.lagSmoothing(0);
+</script>
 </body>
 </html>

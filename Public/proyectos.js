@@ -13,7 +13,6 @@ function showResultCount(container, count, term = "") {
   container.prepend(info);
 }
 
-
 document.addEventListener("DOMContentLoaded", async () => {
   // API endpoints
   const API_DATA = "/api/data";
@@ -21,9 +20,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Elementos del DOM
   const elements = {
-    
     loginButtonContainer: document.getElementById("login-button-container"),
-    openLoginBtn: document.getElementById("open-login-btn"),sidebar: document.getElementById("sidebar"),
+    openLoginBtn: document.getElementById("open-login-btn"),
+    sidebar: document.getElementById("sidebar"),
     sidebarToggle: document.getElementById("sidebar-toggle"),
     menuItems: document.querySelectorAll(".menu-item"),
     sections: document.querySelectorAll(".section"),
@@ -80,6 +79,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   let currentReportProjectId = null;
+  let currentProjectId = null; // Para seguimiento del proyecto actual en detalles
 
   // Inicialización
   await init();
@@ -89,7 +89,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     elements.searchInput.value = searchTerm;
     renderAllProjects(searchTerm);
   }
-
 
   async function init() {
     await loadData();
@@ -208,7 +207,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (elements.fileInput) {
       elements.fileInput.addEventListener("change", handleFileSelect);
     }
-        // Preview imagen de miniatura
+    // Preview imagen de miniatura
     if (elements.thumbnailInput) {
       elements.thumbnailInput.addEventListener("change", handleThumbnailSelect);
     }
@@ -262,6 +261,199 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
   }
+// Reemplazar la función setupCommentForm
+function setupCommentForm() {
+  const form = document.getElementById("comment-form");
+  
+  if (!form) return;
+
+  form.addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const content = this.querySelector("#comment-content").value.trim();
+
+    if (!content || !currentProjectId || !data.currentUser) {
+      alert("❌ Faltan datos para comentar");
+      return;
+    }
+
+    const btn = this.querySelector("button[type='submit']");
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+    try {
+      const response = await fetch(`/api/project/${currentProjectId}/comment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          author: data.currentUser,
+          content
+        })
+      });
+
+      if (!response.ok) throw new Error("Error en la respuesta");
+
+      // Actualizar los datos locales y la interfaz
+      await loadData(); // Recargar datos del servidor
+      loadComments(currentProjectId); // Actualizar la vista de comentarios
+      this.querySelector("#comment-content").value = ""; // Limpiar el textarea
+    } catch (err) {
+      console.error("Error al enviar comentario:", err);
+      alert("❌ Error al guardar el comentario");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  });
+}
+
+// Modificar el event listener para eliminar comentarios (dentro de loadComments)
+container.querySelectorAll('.delete-comment').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const commentId = btn.closest('.comment').dataset.commentid;
+    if (!commentId || !currentProjectId) return;
+    
+    if (!confirm('¿Eliminar este comentario?')) return;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    
+    try {
+      const response = await fetch(`/api/project/${currentProjectId}/comment/${commentId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentUser: data.currentUser,
+          isAdmin: data.isAdmin
+        })
+      });
+      
+      if (!response.ok) throw new Error('Error en la respuesta');
+      
+      // Actualizar los datos locales y la vista
+      await loadData();
+      loadComments(currentProjectId);
+    } catch (err) {
+      console.error('Error al eliminar comentario:', err);
+      alert('Error al eliminar el comentario');
+    }
+  });
+});
+async function loadComments(pid) {
+  currentProjectId = pid;
+  const project = data.projects.find(p => p.id === pid);
+  if (!project) return;
+
+  const container = document.getElementById("comments-list");
+  if (!container) return;
+
+  const comments = project.comments || [];
+  if (comments.length === 0) {
+    container.innerHTML = `<p style="color:#666; margin-top:1rem;">Este proyecto aún no tiene comentarios.</p>`;
+    return;
+  }
+container.innerHTML = comments.map(c => {
+  const date = new Date(c.createdAt).toLocaleString("es-ES", {
+    year: "numeric", 
+    month: "short", 
+    day: "numeric",
+    hour: "2-digit", 
+    minute: "2-digit"
+  });
+
+  const canDelete = data.currentUser === c.author || data.isAdmin;
+  
+  return `
+    <div class="comment" data-commentid="${c.id}">
+      <div class="comment-header">
+        <span class="comment-author">
+          <i class="fas fa-user"></i> ${c.author}
+        </span>
+        <span class="comment-date">
+          <i class="far fa-clock"></i> ${date}
+        </span>
+        ${canDelete 
+          ? `<div class="comment-actions">
+               <button class="btn btn-sm delete-comment" title="Eliminar comentario">
+                 <i class="fas fa-trash"></i>
+               </button>
+             </div>` 
+          : ''}
+      </div>
+      <div class="comment-content">${escapeHtml(c.content).replace(/\n/g, "<br>")}</div>
+    </div>`;
+}).join('');
+// Reemplaza solo el event listener para eliminar comentarios (dentro de loadComments)
+container.querySelectorAll('.delete-comment').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const commentId = btn.closest('.comment').dataset.commentid;
+    if (!commentId || !currentProjectId) return;
+    
+    if (!confirm('¿Eliminar este comentario?')) return;
+    
+    const commentElement = btn.closest('.comment'); // Guardar referencia al elemento DOM
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    
+    try {
+      const response = await fetch(`/api/project/${currentProjectId}/comment/${commentId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentUser: data.currentUser,
+          isAdmin: data.isAdmin
+        })
+      });
+      
+      if (!response.ok) throw new Error('Error en la respuesta');
+
+    
+commentElement.style.transition = 'all 0.3s ease';
+commentElement.style.opacity = '0';
+commentElement.style.height = '0';
+commentElement.style.margin = '0';
+commentElement.style.padding = '0';
+commentElement.style.overflow = 'hidden';
+
+setTimeout(() => {
+  commentElement.remove();
+}, 300);
+      
+      const successMsg = document.createElement('div');
+      successMsg.className = 'alert alert-success';
+      successMsg.innerHTML = 'Comentario eliminado';
+      container.prepend(successMsg);
+      setTimeout(() => successMsg.remove(), 3000);
+      
+    } catch (err) {
+      console.error('Error al eliminar comentario:', err);
+      // Restaurar botón
+      btn.innerHTML = '<i class="fas fa-trash"></i>';
+      btn.disabled = false;
+      // Mostrar error
+      const errorMsg = document.createElement('div');
+      errorMsg.className = 'alert alert-danger';
+      errorMsg.innerHTML = 'Error al eliminar';
+      container.prepend(errorMsg);
+      setTimeout(() => errorMsg.remove(), 3000);
+    }
+  });
+});
+}
+
+// Sanitizar texto para evitar XSS
+function escapeHtml(text) {
+  const map = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
 
   // Colapsar/expandir sidebar
   function toggleSidebar() {
@@ -269,6 +461,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     elements.sidebar.classList.toggle("sidebar-collapsed");
     updateMenuIcons();
   }
+  
   function updateMenuIcons() {
     if (!elements.sidebarToggle) return;
     const icon = elements.sidebarToggle.querySelector("i");
@@ -276,7 +469,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (elements.sidebar.classList.contains("sidebar-collapsed")) {
       icon.classList.replace("fa-chevron-left", "fa-chevron-right");
     } else {
-      
       icon.classList.replace("fa-chevron-right", "fa-chevron-left");
     }
   }
@@ -308,7 +500,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       elements.menuItems.forEach(i => i.classList.remove("active"));
       document.querySelector('[data-section="all-projects"]').classList.add("active");
     } else {
-      
       showAuthMessage("Usuario o contraseña incorrectos", "error");
     }
   }
@@ -362,39 +553,38 @@ document.addEventListener("DOMContentLoaded", async () => {
       elements.loginFormContainer.style.display = "block";
       elements.registerFormContainer.style.display = "none";
     } else {
-      
       elements.loginFormContainer.style.display = "none";
       elements.registerFormContainer.style.display = "block";
     }
   }
 
   function checkAuthState() {
-  if (data.currentUser) {
-    if (elements.loginButtonContainer) {
-      elements.loginButtonContainer.style.display = "none";
+    if (data.currentUser) {
+      if (elements.loginButtonContainer) {
+        elements.loginButtonContainer.style.display = "none";
+      }
+      elements.currentUserSpan.textContent = data.currentUser;
+      const user = data.users.find(u => u.username === data.currentUser);
+      data.isAdmin = !!(user && user.isAdmin);
+      if (data.isAdmin) document.body.classList.add("admin-mode");
+      else document.body.classList.remove("admin-mode");
+      elements.userInfo.style.display = "block";
+      if (elements.authModal) elements.authModal.classList.remove("active");
+      document.body.style.overflow = "auto";
+    } else {
+      if (elements.loginButtonContainer) {
+        elements.loginButtonContainer.style.display = "block";
+      }
+      data.currentUser = null;
+      data.isAdmin = false;
+      document.body.classList.remove("admin-mode");
+      elements.userInfo.style.display = "none";
+      if (elements.authModal) elements.authModal.classList.add("active");
+      document.body.style.overflow = "hidden";
     }
-    elements.currentUserSpan.textContent = data.currentUser;
-    const user = data.users.find(u => u.username === data.currentUser);
-    data.isAdmin = !!(user && user.isAdmin);
-    if (data.isAdmin) document.body.classList.add("admin-mode");
-    else document.body.classList.remove("admin-mode");
-    elements.userInfo.style.display = "block";
-    if (elements.authModal) elements.authModal.classList.remove("active");
-    document.body.style.overflow = "auto";
-  } else {
-    if (elements.loginButtonContainer) {
-      elements.loginButtonContainer.style.display = "block";
-    }
-    data.currentUser = null;
-    data.isAdmin = false;
-    document.body.classList.remove("admin-mode");
-    elements.userInfo.style.display = "none";
-    if (elements.authModal) elements.authModal.classList.add("active");
-    document.body.style.overflow = "hidden";
   }
-}
 
- // Preview de imágenes adjuntas
+  // Preview de imágenes adjuntas
   function handleFileSelect(e) {
     elements.imagePreview.innerHTML = "";
     for (let file of e.target.files) {
@@ -435,12 +625,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    //Mover la declaración de form al inicio
     const form = elements.projectForm;
     
     // Validar campos obligatorios
     const name = form["project-name"].value.trim();
     const description = form["project-desc"].value.trim();
+    const link = form["project-link"].value.trim(); // Nuevo campo de enlace
     
     if (!name || !description) {
       alert("Nombre y descripción son campos obligatorios");
@@ -460,6 +650,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     formData.append("technologies", form["project-technologies"].value.trim());
     formData.append("status", form["project-status"].value);
     formData.append("author", data.currentUser);
+    
+    // Agregar enlace si está presente
+    if (link) {
+      formData.append("link", link);
+    }
 
     // Agregar la miniatura al FormData
     if (elements.thumbnailInput.files[0]) {
@@ -475,26 +670,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     elements.submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
 
     try {
-    const resp = await fetch(API_PROJECT, {
-  method: "POST",
-  body: formData
-});
+      const resp = await fetch(API_PROJECT, {
+        method: "POST",
+        body: formData
+      });
 
-if (!resp.ok) {
-  // Intentamos leer texto plano para mostrar la causa
-  const texto = await resp.text();
-  console.error("POST /api/project devolvió status:", resp.status, texto);
-  alert("Error al guardar proyecto. Revisa la consola para más detalles.");
-  return;
-}
+      if (!resp.ok) {
+        const texto = await resp.text();
+        console.error("POST /api/project devolvió status:", resp.status, texto);
+        alert("Error al guardar proyecto. Revisa la consola para más detalles.");
+        return;
+      }
 
-const resJson = await resp.json();
-alert("¡Proyecto publicado con éxito!");
-
+      const resJson = await resp.json();
       alert("¡Proyecto publicado con éxito!");
       form.reset();
       elements.imagePreview.innerHTML = "";
-      elements.thumbnailPreview.innerHTML = ""; // Limpiar previsualización
+      elements.thumbnailPreview.innerHTML = "";
       await loadData();
       renderAllProjects();
     } catch (err) {
@@ -506,118 +698,116 @@ alert("¡Proyecto publicado con éxito!");
     }
   }
 
-
   // Renderizar todos los proyectos
   function renderAllProjects(searchTerm = "") {
-  showLoader(elements.projectsList);
-  let list = [...data.projects];
-  if (searchTerm) {
-    const term = searchTerm.toLowerCase();
-    list = list.filter(p =>
-      p.name.toLowerCase().includes(term) ||
-      (p.description && p.description.toLowerCase().includes(term)) ||
-      (p.category && p.category.toLowerCase().includes(term)) ||
-      (p.technologies && p.technologies.some(t => t.toLowerCase().includes(term)))
-    );
+    showLoader(elements.projectsList);
+    let list = [...data.projects];
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      list = list.filter(p =>
+        p.name.toLowerCase().includes(term) ||
+        (p.description && p.description.toLowerCase().includes(term)) ||
+        (p.category && p.category.toLowerCase().includes(term)) ||
+        (p.technologies && p.technologies.some(t => t.toLowerCase().includes(term)))
+      );
+    }
+
+    if (list.length === 0) {
+      elements.projectsList.innerHTML = `
+        <div class="no-results">
+          <i class="fas fa-ghost fa-2x"></i>
+          <h3>No se encontraron proyectos</h3>
+          <p>Intenta con otros términos de búsqueda</p>
+          <img draggable="false" oncontextmenu="return false" ondragstart="return false;" src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmF2cHJlNXYzNHpyMzlnNG56MTNzZnczOWZoNjFhanVpODFwbGk4YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7b01Wv8oROOFa/giphy.gif" alt="Nada encontrado" style="margin-top: 1rem; width: 120px; display: block; margin-left: auto; margin-right: auto;">
+        </div>`;
+      return;
+    }
+
+    elements.projectsList.innerHTML = "";
+    showResultCount(elements.projectsList, list.length, searchTerm);
+    elements.projectsList.innerHTML += list.map(p => {
+      const reportCount = data.reports.filter(r => r.projectId === p.id && r.status === "pendiente").length;
+      const firstImage = p.files && p.files.length && p.files.find(f => f.mimeType.startsWith("image/"));
+      const imgSrc = p.thumbnailPath || (firstImage && firstImage.filePath);
+      
+      return `
+        <div class="project-card" data-id="${p.id}">
+          ${reportCount > 0 ? `<div class="reported-badge">${reportCount} Reporte${reportCount > 1 ? 's' : ''}</div>` : ''}
+          ${imgSrc
+            ? `<img src="${imgSrc}" alt="${p.name}" class="project-thumbnail">`
+            : `<div class="project-thumbnail"><i class="fas fa-image"></i></div>`}
+          <h3>${p.name}</h3>
+          <p>${truncateText(p.description, 100)}</p>
+          <div class="tech-tags">
+            ${p.technologies && p.technologies.slice(0, 3).map(t => `<span class="project-tech">${t}</span>`).join('')}
+          </div>
+          <div class="project-status ${getStatusClass(p.status)}">${getStatusText(p.status)}</div>
+          <div class="project-actions">
+            <small>Publicado por: ${p.author} ${data.isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}</small>
+            ${data.currentUser === p.author || data.isAdmin
+              ? `<button class="btn btn-danger delete-btn" data-id="${p.id}"><i class="fas fa-trash"></i> Eliminar</button>`
+              : ''}
+            ${data.currentUser && data.currentUser !== p.author
+              ? `<button class="btn btn-warning report-btn" data-id="${p.id}" data-name="${p.name}"><i class="fas fa-flag"></i> Reportar</button>`
+              : ''}
+          </div>
+        </div>`;
+    }).join("");
+
+    setupProjectCardEvents();
   }
-
- if (list.length === 0) {
-  elements.projectsList.innerHTML = `
-    <div class="no-results">
-      <i class="fas fa-search fa-2x"></i>
-      <h3>No se encontraron proyectos</h3>
-      <p>Intenta con otros términos de búsqueda</p>
-      <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmF2cHJlNXYzNHpyMzlnNG56MTNzZnczOWZoNjFhanVpODFwbGk4YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7b01Wv8oROOFa/giphy.gif" alt="Nada encontrado" style="margin-top: 1rem; width: 120px; display: block; margin-left: auto; margin-right: auto;">
-    </div>`;
-  return;
-}
-
-  elements.projectsList.innerHTML = "";
-  showResultCount(elements.projectsList, list.length, searchTerm);
-  elements.projectsList.innerHTML += list.map(p => {
-    const reportCount = data.reports.filter(r => r.projectId === p.id && r.status === "pendiente").length;
-    const firstImage = p.files && p.files.length && p.files.find(f => f.mimeType.startsWith("image/"));
-    const imgSrc = p.thumbnailPath || (firstImage && firstImage.filePath);
-    
-    return `
-      <div class="project-card" data-id="${p.id}">
-        ${reportCount > 0 ? `<div class="reported-badge">${reportCount} Reporte${reportCount > 1 ? 's' : ''}</div>` : ''}
-        ${imgSrc
-          ? `<img src="${imgSrc}" alt="${p.name}" class="project-thumbnail">`
-          : `<div class="project-thumbnail"><i class="fas fa-image"></i></div>`}
-        <h3>${p.name}</h3>
-        <p>${truncateText(p.description, 100)}</p>
-        <div class="tech-tags">
-          ${p.technologies && p.technologies.slice(0, 3).map(t => `<span class="project-tech">${t}</span>`).join('')}
-        </div>
-        <div class="project-status ${getStatusClass(p.status)}">${getStatusText(p.status)}</div>
-        <div class="project-actions">
-          <small>Publicado por: ${p.author} ${data.isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}</small>
-          ${data.currentUser === p.author || data.isAdmin
-            ? `<button class="btn btn-danger delete-btn" data-id="${p.id}"><i class="fas fa-trash"></i> Eliminar</button>`
-            : ''}
-          ${data.currentUser && data.currentUser !== p.author
-            ? `<button class="btn btn-warning report-btn" data-id="${p.id}" data-name="${p.name}"><i class="fas fa-flag"></i> Reportar</button>`
-            : ''}
-        </div>
-      </div>`;
-  }).join("");
-
-  setupProjectCardEvents();
-}
 
   // Renderizar proyectos del usuario
- function renderUserProjects(searchTerm = "") {
-  if (!data.currentUser) return;
+  function renderUserProjects(searchTerm = "") {
+    if (!data.currentUser) return;
 
-  let list = data.projects.filter(p => p.author === data.currentUser);
+    let list = data.projects.filter(p => p.author === data.currentUser);
 
-  if (searchTerm) {
-    const term = searchTerm.toLowerCase();
-    list = list.filter(p =>
-      p.name.toLowerCase().includes(term) ||
-      (p.description && p.description.toLowerCase().includes(term)) ||
-      (p.category && p.category.toLowerCase().includes(term)) ||
-      (p.technologies && p.technologies.some(t => t.toLowerCase().includes(term)))
-    );
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      list = list.filter(p =>
+        p.name.toLowerCase().includes(term) ||
+        (p.description && p.description.toLowerCase().includes(term)) ||
+        (p.category && p.category.toLowerCase().includes(term)) ||
+        (p.technologies && p.technologies.some(t => t.toLowerCase().includes(term)))
+      );
+    }
+
+    if (list.length === 0) {
+      elements.userProjectsList.innerHTML = `
+        <div class="no-results">
+          <i class="fas fa-ghost fa-2x"></i>
+          <h3>No se encontraron proyectos</h3>
+          <p>${searchTerm ? 'No tienes proyectos con ese nombre' : 'Aún no has creado proyectos'}</p><img draggable="false" oncontextmenu="return false" ondragstart="return false;" src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmF2cHJlNXYzNHpyMzlnNG56MTNzZnczOWZoNjFhanVpODFwbGk4YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7b01Wv8oROOFa/giphy.gif" alt="Nada encontrado" style="margin-top: 1rem; width: 120px; display: block; margin-left: auto; margin-right: auto;">
+        </div>`;
+      return;
+    }
+
+    elements.userProjectsList.innerHTML = list.map(p => {
+      const reportCount = data.reports.filter(r => r.projectId === p.id && r.status === "pendiente").length;
+      const firstImage = p.files && p.files.length && p.files.find(f => f.mimeType.startsWith("image/"));
+      const imgSrc = p.thumbnailPath || (firstImage && firstImage.filePath);
+
+      return `
+        <div class="project-card" data-id="${p.id}">
+          ${reportCount > 0 ? `<div class="reported-badge">${reportCount} Reporte${reportCount > 1 ? 's' : ''}</div>` : ''}
+          ${imgSrc
+            ? `<img src="${imgSrc}" alt="${p.name}" class="project-thumbnail">`
+            : `<div class="project-thumbnail"><i class="fas fa-image"></i></div>`}
+          <h3>${p.name}</h3>
+          <p>${truncateText(p.description, 100)}</p>
+          <div class="tech-tags">
+            ${p.technologies && p.technologies.slice(0, 3).map(t => `<span class="project-tech">${t}</span>`).join('')}
+          </div>
+          <div class="project-status ${getStatusClass(p.status)}">${getStatusText(p.status)}</div>
+          <div class="project-actions">
+            <button class="btn btn-danger delete-btn" data-id="${p.id}"><i class="fas fa-trash"></i> Eliminar</button>
+          </div>
+        </div>`;
+    }).join("");
+
+    setupProjectCardEvents();
   }
-
-  if (list.length === 0) {
-    elements.userProjectsList.innerHTML = `
-      <div class="no-results">
-        <i class="fas fa-search fa-2x"></i>
-        <h3>No se encontraron proyectos</h3>
-        <p>${searchTerm ? 'Intenta con otros términos de búsqueda' : 'Aún no has creado proyectos'}</p><img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmF2cHJlNXYzNHpyMzlnNG56MTNzZnczOWZoNjFhanVpODFwbGk4YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7b01Wv8oROOFa/giphy.gif" alt="Nada encontrado" style="margin-top: 1rem; width: 120px; display: block; margin-left: auto; margin-right: auto;">
-      </div>`;
-    return;
-  }
-
-  elements.userProjectsList.innerHTML = list.map(p => {
-    const reportCount = data.reports.filter(r => r.projectId === p.id && r.status === "pendiente").length;
-    const firstImage = p.files && p.files.length && p.files.find(f => f.mimeType.startsWith("image/"));
-    const imgSrc = p.thumbnailPath || (firstImage && firstImage.filePath);
-
-    return `
-      <div class="project-card" data-id="${p.id}">
-        ${reportCount > 0 ? `<div class="reported-badge">${reportCount} Reporte${reportCount > 1 ? 's' : ''}</div>` : ''}
-        ${imgSrc
-          ? `<img src="${imgSrc}" alt="${p.name}" class="project-thumbnail">`
-          : `<div class="project-thumbnail"><i class="fas fa-image"></i></div>`}
-        <h3>${p.name}</h3>
-        <p>${truncateText(p.description, 100)}</p>
-        <div class="tech-tags">
-          ${p.technologies && p.technologies.slice(0, 3).map(t => `<span class="project-tech">${t}</span>`).join('')}
-        </div>
-        <div class="project-status ${getStatusClass(p.status)}">${getStatusText(p.status)}</div>
-        <div class="project-actions">
-          <button class="btn btn-danger delete-btn" data-id="${p.id}"><i class="fas fa-trash"></i> Eliminar</button>
-        </div>
-      </div>`;
-  }).join("");
-
-  setupProjectCardEvents();
-}
-
 
   // Agregar eventos a tarjetas
   function setupProjectCardEvents() {
@@ -630,36 +820,32 @@ alert("¡Proyecto publicado con éxito!");
     });
 
     document.querySelectorAll(".delete-btn").forEach(btn => {
-btn.addEventListener("click", async e => {
-  e.stopPropagation();
-  if (!confirm("¿Seguro que deseas eliminar?")) return;
-  const pid = btn.dataset.id;
+      btn.addEventListener("click", async e => {
+        e.stopPropagation();
+        if (!confirm("¿Seguro que deseas eliminar?")) return;
+        const pid = btn.dataset.id;
 
-  // Llamamos al DELETE del backend
-  try {
-    const resp = await fetch(`/api/project/${pid}`, { method: "DELETE" });
-    if (!resp.ok) {
-      const txt = await resp.text();
-      console.error("Error al eliminar proyecto:", resp.status, txt);
-      return alert("Error eliminando el proyecto. Consulta la consola.");
-    }
-    // Si todo salió bien, recargamos la data desde el servidor
-    await loadData();  // Lee de nuevo /api/data
-    renderAllProjects();
-    renderUserProjects();
-    // Si estabas en el modal de detalles, ciérralo:
-    const modal = document.getElementById("project-details-modal");
-    if (modal) {
-      modal.classList.remove("active");
-      document.body.style.overflow = "auto";
-    }
-    alert("Proyecto eliminado correctamente");
-  } catch (err) {
-    console.error("Excepción al eliminar proyecto:", err);
-    alert("Error en la petición de eliminación. Ver consola.");
-  }
-});
-
+        try {
+          const resp = await fetch(`/api/project/${pid}`, { method: "DELETE" });
+          if (!resp.ok) {
+            const txt = await resp.text();
+            console.error("Error al eliminar proyecto:", resp.status, txt);
+            return alert("Error eliminando el proyecto. Consulta la consola.");
+          }
+          await loadData();
+          renderAllProjects();
+          renderUserProjects();
+          const modal = document.getElementById("project-details-modal");
+          if (modal) {
+            modal.classList.remove("active");
+            document.body.style.overflow = "auto";
+          }
+          alert("Proyecto eliminado correctamente");
+        } catch (err) {
+          console.error("Excepción al eliminar proyecto:", err);
+          alert("Error en la petición de eliminación. Ver consola.");
+        }
+      });
     });
 
     document.querySelectorAll(".report-btn").forEach(btn => {
@@ -703,6 +889,196 @@ btn.addEventListener("click", async e => {
     alert("¡Reporte enviado!");
   }
 
+function showProjectDetails(pid) {
+  const project = data.projects.find(p => p.id === pid);
+  if (!project) {
+    elements.projectDetailsContent.innerHTML = `
+      <h2>Proyecto no encontrado</h2>
+      <p>Puede que ya haya sido eliminado.</p>`;
+      setupCommentForm();
+    elements.projectDetailsModal.classList.add("active");
+    document.body.style.overflow = "hidden";
+    return;
+  }
+
+  currentProjectId = pid;
+  const createdAt = new Date(project.createdAt).toLocaleDateString("es-ES", {
+    year: "numeric", month: "long", day: "numeric"
+  });
+  const projectReports = data.reports.filter(r => r.projectId === pid);
+
+  const getFileIcon = type => {
+    if (type.startsWith("image/")) return "fa-file-image";
+    if (type === "application/pdf") return "fa-file-pdf";
+    if (type.startsWith("audio/")) return "fa-file-audio";
+    if (["application/zip", "application/x-rar-compressed", "application/x-7z-compressed"].includes(type))
+      return "fa-file-archive";
+    if (type === "text/plain") return "fa-file-alt";
+    if (["application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(type))
+      return "fa-file-word";
+    return "fa-file";
+  };
+
+  let html = `
+    ${project.thumbnailPath
+      ? `<img src="${project.thumbnailPath}" alt="${project.name}" class="project-thumbnail" style="max-width:100%;border-radius:8px;margin-bottom:1rem;">`
+      : ''}
+    <h2>${project.name}</h2>
+    <p><strong>Categoría:</strong> ${project.category || "No especificada"}</p>
+    <p><strong>Estado:</strong> <span class="project-status ${getStatusClass(project.status)}">${getStatusText(project.status)}</span></p>
+    <p><strong>Publicado por:</strong> ${project.author}</p>
+    ${(() => {
+      const authorUser = data.users.find(u => u.username === project.author);
+      return authorUser && authorUser.contact
+        ? `<p><strong>Contacto:</strong> ${authorUser.contact}</p>`
+        : "";
+    })()}
+    <p><strong>Fecha:</strong> ${createdAt}</p>
+    ${project.technologies && project.technologies.length
+      ? `<p><strong>Tecnologías:</strong> ${project.technologies.join(", ")}</p>`
+      : ""}
+    <h3>Descripción</h3>
+    <p>${project.description.replace(/\n/g, "<br>")}</p>`;
+
+  if (project.link) {
+    html += `<p><strong>Enlace:</strong> <a href="${project.link}" target="_blank">${project.link}</a></p>`;
+  }
+
+  if (project.files && project.files.length) {
+    html += `<div class="project-files"><h3>Archivos Adjuntos</h3><div class="file-grid">`;
+    project.files.forEach(f => {
+      html += `
+        <div class="file-preview">
+          <i class="fas ${getFileIcon(f.mimeType)}"></i>
+          <div class="file-name">${truncateText(f.originalName, 15)}</div>
+          <a href="${f.filePath}" download="${f.originalName}" class="download-btn">
+            <i class="fas fa-download"></i> Descargar
+          </a>
+        </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  if (data.isAdmin && projectReports.length) {
+    html += `<div class="project-files">
+               <h3>Reportes sobre este proyecto</h3>
+               <div class="reports-grid">
+                 ${projectReports.map(r => {
+                   const date = new Date(r.reportedAt).toLocaleDateString("es-ES", {
+                     year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"
+                   });
+                   return `
+                     <div class="report-card ${r.status !== "pendiente" ? "resolved-report" : ""}">
+                       <div class="report-header">
+                         <h4>Reporte #${r.id.substring(0, 6)}</h4>
+                         <span class="project-status ${r.status === "pendiente" ? "status-en-progreso" : "status-completado"}">
+                           ${r.status === "pendiente" ? "Pendiente" : (r.status === "resuelto" ? "Resuelto" : "Descartado")}
+                         </span>
+                       </div>
+                       <div class="report-meta">
+                         <strong>Reportado por:</strong> ${r.reportedBy} |
+                         <strong>Fecha:</strong> ${date}
+                         ${r.resolvedBy ? `| <strong>Resuelto por:</strong> ${r.resolvedBy}` : ""}
+                       </div>
+                       <p><strong>Motivo:</strong> ${getReportReasonText(r.reason)}</p>
+                       <div class="report-reason">${r.description}</div>
+                     </div>`;
+                 }).join("")}
+               </div>
+             </div>`;
+  }
+
+  html += `
+    <div class="comments-section" style="margin-top:2rem;">
+      <h3>Comentarios</h3>
+      <div id="comments-list" class="comments-container"></div>
+      ${data.currentUser 
+        ? `<form id="comment-form" class="comment-form">
+             <div class="form-group">
+               <label for="comment-content" class="form-label">Nuevo comentario</label>
+               <textarea id="comment-content" class="form-control" placeholder="Escribe tu comentario aquí..." required></textarea>
+             </div>
+             <button type="submit" class="btn btn-primary">
+               <i class="fas fa-paper-plane"></i> Enviar
+             </button>
+           </form>`
+        : '<p>Inicia sesión para comentar</p>'}
+    </div>
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      ${data.currentUser === project.author || data.isAdmin
+        ? `<button class="btn btn-danger delete-btn" data-id="${project.id}">
+             <i class="fas fa-trash"></i> Eliminar
+           </button>`
+        : ""}
+      ${data.currentUser && data.currentUser !== project.author
+        ? `<button class="btn btn-warning report-btn" data-id="${project.id}" data-name="${project.name}">
+             <i class="fas fa-flag"></i> Reportar
+           </button>`
+        : ""}
+    </div>`;
+
+  elements.projectDetailsContent.innerHTML = html;
+
+  // Cargar comentarios con formato
+  loadComments(pid);
+  setupCommentForm();
+  // Botón eliminar
+  const deleteBtn = elements.projectDetailsContent.querySelector(".delete-btn");
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", async e => {
+      e.stopPropagation();
+      if (!confirm("¿Eliminar proyecto?")) return;
+      data.projects = data.projects.filter(p => p.id !== pid);
+      await saveData();
+      renderAllProjects();
+      renderUserProjects();
+      renderModerationPanel();
+      elements.projectDetailsModal.classList.remove("active");
+      document.body.style.overflow = "auto";
+    });
+  }
+
+  // Botón reportar
+  const reportBtn = elements.projectDetailsContent.querySelector(".report-btn");
+  if (reportBtn) {
+    reportBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      currentReportProjectId = reportBtn.dataset.id;
+      elements.reportProjectName.textContent = reportBtn.dataset.name;
+      elements.reportModal.classList.add("active");
+      document.body.style.overflow = "hidden";
+    });
+  }
+
+  elements.projectDetailsModal.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+
+  function getStatusText(status) {
+    switch (status) {
+      case "en-progreso": return "En progreso";
+      case "completado": return "Completado";
+      case "abandonado": return "Abandonado";
+      case "busqueda": return "Buscando colaborador";
+      default: return status;
+    }
+  }
+
+  function getStatusClass(status) {
+    switch (status) {
+      case "en-progreso": return "status-en-progreso";
+      case "completado": return "status-completado";
+      case "abandonado": return "status-abandonado";
+      case "busqueda": return "status-busqueda";
+      default: return "";
+    }
+  }
+
+  function truncateText(text, maxLen) {
+    return text.length > maxLen ? text.substring(0, maxLen) + "..." : text;
+  }
+
   // Panel de moderación (solo admin)
   function renderModerationPanel() {
     if (!data.isAdmin) {
@@ -719,7 +1095,6 @@ btn.addEventListener("click", async e => {
           <h3>No hay reportes pendientes</h3>
         </div>`;
     } else {
-      
       elements.reportsList.innerHTML = pendientes.map(r => {
         const proj = data.projects.find(p => p.id === r.projectId);
         const date = new Date(r.reportedAt).toLocaleDateString("es-ES", {
@@ -758,7 +1133,6 @@ btn.addEventListener("click", async e => {
           <h3>No hay reportes resueltos</h3>
         </div>`;
     } else {
-      
       elements.resolvedReportsList.innerHTML = resueltos.map(r => {
         const proj = data.projects.find(p => p.id === r.projectId);
         const resolvedAt = new Date(r.resolvedAt).toLocaleDateString("es-ES", {
@@ -833,303 +1207,6 @@ btn.addEventListener("click", async e => {
     return map[reason] || reason;
   }
 
-  // Mostrar detalles del proyecto
-  function showProjectDetails(pid) {
-    const project = data.projects.find(p => p.id === pid);
-    if (!project) {
-      elements.projectDetailsContent.innerHTML = `
-        <h2>Proyecto no encontrado</h2>
-        <p>Puede que ya haya sido eliminado.</p>`;
-      elements.projectDetailsModal.classList.add("active");
-      document.body.style.overflow = "hidden";
-      return;
-    }
-    const createdAt = new Date(project.createdAt).toLocaleDateString("es-ES", {
-      year: "numeric", month: "long", day: "numeric"
-    });
-    const projectReports = data.reports.filter(r => r.projectId === pid);
-
-    const getFileIcon = type => {
-      if (type.startsWith("image/")) return "fa-file-image";
-      if (type === "application/pdf") return "fa-file-pdf";
-      if (type.startsWith("audio/")) return "fa-file-audio";
-      if (["application/zip", "application/x-rar-compressed", "application/x-7z-compressed"].includes(type))
-        return "fa-file-archive";
-      if (type === "text/plain") return "fa-file-alt";
-      if (["application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(type))
-        return "fa-file-word";
-      return "fa-file";
-    };
-
-    elements.projectDetailsContent.innerHTML = `
-      ${project.thumbnailPath
-  ? `<img src="${project.thumbnailPath}" alt="${project.name}" class="project-thumbnail" style="max-width:100%;border-radius:8px;margin-bottom:1rem;">`
-  : ''}
-<h2>${project.name}</h2>
-      <p><strong>Categoría:</strong> ${project.category || "No especificada"}</p>
-      <p><strong>Estado:</strong> <span class="project-status ${getStatusClass(project.status)}">${getStatusText(project.status)}</span></p>
-      <p><strong>Publicado por:</strong> ${project.author}</p>
-      ${(() => {
-  const authorUser = data.users.find(u => u.username === project.author);
-  return authorUser && authorUser.contact
-    ? `<p><strong>Contacto:</strong> ${authorUser.contact}</p>`
-    : "";
-})()}
-
-      <p><strong>Fecha:</strong> ${createdAt}</p>
-      ${project.technologies && project.technologies.length
-        ? `<p><strong>Tecnologías:</strong> ${project.technologies.join(", ")}</p>`
-        : ""}
-      <h3>Descripción</h3>
-      <p>${project.description}</p>
-      ${project.files && project.files.length
-        ? `<div class="project-files">
-             <h3>Archivos Adjuntos</h3>
-             <div class="file-grid">
-               ${project.files.map(f => `
-                 <div class="file-preview">
-                   <i class="fas ${getFileIcon(f.mimeType)}"></i>
-                   <div class="file-name">${truncateText(f.originalName, 15)}</div>
-                   <a href="${f.filePath}" download="${f.originalName}" class="download-btn">
-                     <i class="fas fa-download"></i> Descargar
-                   </a>
-                 </div>
-               `).join("")}
-             </div>
-           </div>`
-        : ""}
-      ${data.isAdmin && projectReports.length
-        ? `<div class="project-files">
-             <h3>Reportes sobre este proyecto</h3>
-             <div class="reports-grid">
-               ${projectReports.map(r => {
-                 const date = new Date(r.reportedAt).toLocaleDateString("es-ES", {
-                   year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"
-                 });
-                 return `
-                   <div class="report-card ${r.status !== "pendiente" ? "resolved-report" : ""}">
-                     <div class="report-header">
-                       <h4>Reporte #${r.id.substring(0, 6)}</h4>
-                       <span class="project-status ${r.status === "pendiente" ? "status-en-progreso" : "status-completado"}">
-                         ${r.status === "pendiente" ? "Pendiente" : (r.status === "resuelto" ? "Resuelto" : "Descartado")}
-                       </span>
-                     </div>
-                     <div class="report-meta">
-                       <strong>Reportado por:</strong> ${r.reportedBy} |
-                       <strong>Fecha:</strong> ${date}
-                       ${r.resolvedBy ? `| <strong>Resuelto por:</strong> ${r.resolvedBy}` : ""}
-                     </div>
-                     <p><strong>Motivo:</strong> ${getReportReasonText(r.reason)}</p>
-                     <div class="report-reason">${r.description}</div>
-                   </div>`;
-               }).join("")}
-             </div>
-           </div>`
-        : ""}
-      <div style="margin-top:20px; display:flex; gap:10px;">
-        ${data.currentUser === project.author || data.isAdmin
-          ? `<button class="btn btn-danger delete-btn" data-id="${project.id}">
-               <i class="fas fa-trash"></i> Eliminar
-             </button>`
-          : ""}
-        ${data.currentUser && data.currentUser !== project.author
-          ? `<button class="btn btn-warning report-btn" data-id="${project.id}" data-name="${project.name}">
-               <i class="fas fa-flag"></i> Reportar
-             </button>`
-          : ""}
-      </div>`;
-
-    // Eventos dentro del modal
-    const deleteBtn = elements.projectDetailsContent.querySelector(".delete-btn");
-    if (deleteBtn) {
-      deleteBtn.addEventListener("click", async e => {
-        e.stopPropagation();
-        if (!confirm("¿Eliminar proyecto?")) return;
-        data.projects = data.projects.filter(p => p.id !== pid);
-        await saveData();
-        renderAllProjects();
-        renderUserProjects();
-        renderModerationPanel();
-        elements.projectDetailsModal.classList.remove("active");
-        document.body.style.overflow = "auto";
-      });
-    }
-    const reportBtn = elements.projectDetailsContent.querySelector(".report-btn");
-    if (reportBtn) {
-      reportBtn.addEventListener("click", e => {
-        e.stopPropagation();
-        currentReportProjectId = reportBtn.dataset.id;
-        elements.reportProjectName.textContent = reportBtn.dataset.name;
-        elements.reportModal.classList.add("active");
-        document.body.style.overflow = "hidden";
-      });
-    }
-
-    elements.projectDetailsModal.classList.add("active");
-    document.body.style.overflow = "hidden";
-  }
-
-function getStatusText(status) {
-  switch (status) {
-    case "en-progreso": return "En progreso";
-    case "completado": return "Completado";
-    case "abandonado": return "Abandonado";
-    case "busqueda": return "Buscando colaborador";
-    default: return status;
-  }
-}
-
-function getStatusClass(status) {
-  switch (status) {
-    case "en-progreso": return "status-en-progreso";
-    case "completado": return "status-completado";
-    case "abandonado": return "status-abandonado";
-    case "busqueda": return "status-busqueda";
-    default: return "";
-  }
-}
-
-  function truncateText(text, maxLen) {
-    return text.length > maxLen ? text.substring(0, maxLen) + "..." : text;
-  }
-
-  // Render moderación panel
-  function renderModerationPanel() {
-    if (!data.isAdmin) {
-      elements.moderation.innerHTML = "<p>Acceso denegado</p>";
-      return;
-    }
-    const pendientes = data.reports.filter(r => r.status === "pendiente");
-    const resueltos = data.reports.filter(r => r.status !== "pendiente");
-
-    // Pendientes
-    if (pendientes.length === 0) {
-      elements.reportsList.innerHTML = `
-        <div class="no-results">
-          <i class="fas fa-check-circle fa-2x"></i>
-          <h3>No hay reportes pendientes</h3>
-        </div>`;
-    } else {
-      
-      elements.reportsList.innerHTML = pendientes.map(r => {
-        const proj = data.projects.find(p => p.id === r.projectId);
-        const date = new Date(r.reportedAt).toLocaleDateString("es-ES", {
-          year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"
-        });
-        return `
-        <div class="report-card">
-          <div class="report-header">
-            <h4>Reporte #${r.id.substring(0, 6)}</h4>
-            <span class="project-status">${getReportReasonText(r.reason)}</span>
-          </div>
-          <div class="report-meta">
-            <strong>Proyecto:</strong> ${proj ? proj.name : "Eliminado"} |
-            <strong>Reportado por:</strong> ${r.reportedBy} |
-            <strong>Fecha:</strong> ${date}
-          </div>
-          <p><strong>Descripción:</strong></p>
-          <div class="report-reason">${r.description}</div>
-          <div class="moderation-actions">
-            <button class="btn btn-danger resolve-btn" data-id="${r.id}" data-action="remove">
-              <i class="fas fa-trash"></i> Eliminar Proyecto
-            </button>
-            <button class="btn btn-success resolve-btn" data-id="${r.id}" data-action="dismiss">
-              <i class="fas fa-check"></i> Descartar Reporte
-            </button>
-            ${proj ? `<button class="btn btn-primary view-project-btn" data-id="${proj.id}">
-                        <i class="fas fa-eye"></i> Ver Proyecto
-                      </button>` : ""}
-          </div>
-        </div>`;
-      }).join("");
-    }
-
-    // Resueltos
-    if (resueltos.length === 0) {
-      elements.resolvedReportsList.innerHTML = `
-        <div class="no-results">
-          <i class="fas fa-history fa-2x"></i>
-          <h3>No hay reportes resueltos</h3>
-        </div>`;
-    } else {
-      
-      elements.resolvedReportsList.innerHTML = resueltos.map(r => {
-        const proj = data.projects.find(p => p.id === r.projectId);
-        const date = new Date(r.resolvedAt).toLocaleDateString("es-ES", {
-          year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"
-        });
-        return `
-        <div class="report-card resolved-report">
-          <div class="report-header">
-            <h4>Reporte #${r.id.substring(0, 6)}</h4>
-            <span class="project-status">${r.status === "resuelto" ? "Resuelto" : "Descartado"}</span>
-          </div>
-          <div class="report-meta">
-            <strong>Proyecto:</strong> ${proj ? proj.name : "Eliminado"} |
-            <strong>Reportado por:</strong> ${r.reportedBy} |
-            <strong>Resuelto por:</strong> ${r.resolvedBy} |
-            <strong>Fecha resolución:</strong> ${date}
-          </div>
-          <p><strong>Motivo:</strong> ${getReportReasonText(r.reason)}</p>
-          <div class="report-reason">${r.description}</div>
-          <div class="moderation-actions">
-            ${proj ? `<button class="btn btn-primary view-project-btn" data-id="${proj.id}">
-                        <i class="fas fa-eye"></i> Ver Proyecto
-                      </button>` : ""}
-          </div>
-        </div>`;
-      }).join("");
-    }
-
-    document.querySelectorAll(".resolve-btn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const rid = btn.dataset.id;
-        const action = btn.dataset.action;
-        const rep = data.reports.find(r => r.id === rid);
-        if (!rep) return;
-        if (action === "remove") {
-          if (!confirm("¿Eliminar proyecto y resolver reporte?")) return;
-          data.projects = data.projects.filter(p => p.id !== rep.projectId);
-          rep.status = "resuelto";
-          rep.resolvedBy = data.currentUser;
-          rep.resolvedAt = new Date().toISOString();
-          await saveData();
-          renderModerationPanel();
-          renderAllProjects();
-          alert("Proyecto eliminado y reporte resuelto");
-        } else if (action === "dismiss") {
-          if (!confirm("¿Descartar este reporte?")) return;
-          rep.status = "descartado";
-          rep.resolvedBy = data.currentUser;
-          rep.resolvedAt = new Date().toISOString();
-          await saveData();
-          renderModerationPanel();
-          renderAllProjects();
-          alert("Reporte descartado");
-        }
-      });
-    });
-
-    document.querySelectorAll(".view-project-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const pid = btn.dataset.id;
-        if (pid) showProjectDetails(pid);
-      });
-    });
-  }
-
-  // Texto legible de razón de reporte
-  function getReportReasonText(reason) {
-    const map = {
-      contenido_inapropiado: "Contenido inapropiado",
-      spam: "Spam/Publicidad",
-      derechos_autor: "Derechos de autor",
-      informacion_falsa: "Información falsa",
-      otro: "Otro motivo"
-    };
-    return map[reason] || reason;
-  }
-
   // Manejo de cambio de contraseña
   async function handleChangePassword(e) {
     e.preventDefault();
@@ -1168,7 +1245,6 @@ function getStatusClass(status) {
         elements.changePasswordMessage.textContent = "";
       }, 2000);
     } else {
-      
       showChangePasswordMessage("Error guardando en servidor", "error");
     }
     btn.disabled = false;

@@ -1,46 +1,41 @@
 {
-  "projects": [],
+  "projects": [
+    {
+      "id": "1750268132855",
+      "name": "frdxsz",
+      "description": "4rfedxs",
+      "category": "fredxcs",
+      "technologies": [
+        "rfedx"
+      ],
+      "status": "busqueda",
+      "author": "admin",
+      "link": "",
+      "thumbnailPath": "/uploads/thumbnails/1750268132854_OIP_(3).jpeg",
+      "files": [
+        {
+          "originalName": "OIP__3_-removebg-preview.png",
+          "filePath": "/uploads/files/1750268132854_OIP__3_-removebg-preview.png",
+          "mimeType": "image/png",
+          "size": 102396
+        }
+      ],
+      "comments": [],
+      "createdAt": "2025-06-18T17:35:32.855Z"
+    }
+  ],
   "users": [
     {
       "username": "admin",
       "password": "My.soulmate",
-      "contact": "922 387 831",
       "isAdmin": true
     },
     {
       "username": "Estudiante",
       "password": "123abc",
-      "isAdmin": false
-    },
-    {
-      "username": "Estudiante 2",
-      "password": "hola123",
       "contact": "922 387 831",
       "isAdmin": false
     }
   ],
-  "reports": [
-    {
-      "id": "1749231558405",
-      "projectId": "1749231194847",
-      "reason": "contenido_inapropiado",
-      "description": "ABC",
-      "reportedBy": "Estudiante",
-      "reportedAt": "2025-06-06T17:39:18.405Z",
-      "status": "descartado",
-      "resolvedBy": "admin",
-      "resolvedAt": "2025-06-06T17:40:06.284Z"
-    },
-    {
-      "id": "1749600052233",
-      "projectId": "1749599613203",
-      "reason": "spam",
-      "description": "xze",
-      "reportedBy": "Estudiante",
-      "reportedAt": "2025-06-11T00:00:52.233Z",
-      "status": "descartado",
-      "resolvedBy": "admin",
-      "resolvedAt": "2025-06-11T01:43:21.164Z"
-    }
-  ]
+  "reports": []
 }

@@ -51,6 +51,7 @@
       </form>
     </div>
   </section>
+  <div class="hero-gradient-transition"></div>
   <main id="content">
     <div class="info-block reverse">
       <div class="info-text">
@@ -120,6 +121,25 @@
   });
 </script>
 <script src="bola.js"></script>
-</body>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+<script>
+  // Inicializar Lenis
+  const lenis = new Lenis({
+    duration: 1.3,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smooth: true
+  });
 
+  // Para que Lenis actualice ScrollTrigger (de GSAP)
+  lenis.on('scroll', ScrollTrigger.update);
+
+  // Loop de animación (usa GSAP como loop driver)
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+  gsap.ticker.lagSmoothing(0);
+</script>
+</body>
 </html>
