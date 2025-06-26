@@ -308,15 +308,45 @@ app.delete("/api/project/:projectId/comment/:commentId", (req, res) => {
     return res.status(500).json({ error: "Error interno del servidor" });
   }
 });
+app.post("/api/project/:id/like", (req, res) => {
+  try {
+    const db = readDB();
+    const projectId = req.params.id;
+    const { username } = req.body;
 
-// ---------------------------------------
-// 5) Servir la carpeta /uploads de forma estática
-// ---------------------------------------
+    if (!username) {
+      return res.status(400).json({ error: "Usuario requerido" });
+    }
+
+    const project = db.projects.find(p => p.id === projectId);
+    if (!project) {
+      return res.status(404).json({ error: "Proyecto no encontrado" });
+    }
+
+    if (!Array.isArray(project.likes)) {
+      project.likes = [];
+    }
+
+    const index = project.likes.indexOf(username);
+    if (index === -1) {
+      project.likes.push(username);
+    } else {
+      project.likes.splice(index, 1);
+    }
+
+    const ok = writeDB(db);
+    if (!ok) {
+      return res.status(500).json({ error: "Error guardando datos" });
+    }
+
+    return res.json({ success: true, likes: project.likes.length });
+  } catch (err) {
+    console.error("Error en /like:", err);
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// ---------------------------------------
-// 6) Iniciar servidor
-// ---------------------------------------
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });

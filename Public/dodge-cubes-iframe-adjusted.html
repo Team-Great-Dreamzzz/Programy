@@ -30,11 +30,11 @@
   </style>
 </head>
 <body>
-  <h1>🧊 Dodge Cubes! Extremo >:D</h1>
-  <p>WASD / Flechas para moverte — Esquiva los cubos y los rayos láser⚡</p>
+  <h1>Dodge Cubes! Extremo >:D</h1>
+  <p>WASD / Flechas para moverte — Esquiva los cubos y los rayos láser</p>
 
   <div id="start-menu" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #00ffcc; z-index: 10;">
-    <h1>🚀 Dodge Cubes!</h1>
+    <h1>Dodge Cubes!</h1>
     <p>Evita cubos y rayos — WASD o Flechas para moverte</p>
     <button onclick="startGame()" style="padding: 1rem 2rem; font-size: 1.2rem; border: none; background: #00ffcc; color: #000; border-radius: 8px; cursor: pointer;">Iniciar Juego</button>
   </div>
@@ -58,7 +58,7 @@
     const sparks = [];
     let lasers = [];
     let laserWarnings = [];
-
+    let gameOver = false;
     let score = 0;
     let spawnInterval = 500;
     let cubeSpeed = 3;
@@ -197,62 +197,82 @@
       }
     }
 
-    function endGame(finalScore, reason) {
-      document.getElementById("game-over").style.display = "flex";
-      document.getElementById("final-score").textContent = `${reason}\nPuntaje final: ${finalScore}`;
-      setTimeout(() => {
-        document.getElementById("game-over").style.display = "none";
-        document.getElementById("start-menu").style.display = "flex";
-        location.reload(); // Si quieres reinicio automático
-      }, 2000);
-    }
+function endGame(finalScore, reason) {
+  gameOver = true;
+  clearInterval(cubeSpawner);
+  clearInterval(laserSpawner);
+
+  document.getElementById("game-over").style.display = "flex";
+  document.getElementById("final-score").textContent = `${reason}\nPuntaje final: ${finalScore}`;
+
+  setTimeout(() => {
+    document.getElementById("game-over").style.display = "none";
+    document.getElementById("start-menu").style.display = "flex";
+    gameStarted = false;
+  }, 2500);
+}
+
 
     function drawScore() {
       ctx.fillStyle = "#00ffcc";
       ctx.font = "16px monospace";
       ctx.fillText("Puntaje: " + score, 10, 20);
     }
+function gameLoop() {
+  if (gameOver) return;
 
-    function gameLoop() {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      updatePlayer();
-      drawPlayer();
-      drawSparks();
-      drawCubes();
-      drawWarnings();
-      drawLasers();
-      drawScore();
-      checkCollisions();
+  ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  updatePlayer();
+  drawPlayer();
+  drawSparks();
+  drawCubes();
+  drawWarnings();
+  drawLasers();
+  drawScore();
+  checkCollisions();
 
-      cubes.forEach((c, index) => {
-        if (c.y > canvas.height) {
-          cubes.splice(index, 1);
-          score++;
-          if (score % 5 === 0) {
-            cubeSpeed += 0.5;
-            spawnInterval = Math.max(350, spawnInterval - 50);
-          }
-        }
-      });
-
-      requestAnimationFrame(gameLoop);
-    }
-
-    function startGame() {
-      document.getElementById("start-menu").style.display = "none";
-      if (!gameStarted) {
-        setInterval(() => {
-          spawnCube();
-          if (score > 10) spawnCube();
-          if (score > 25) spawnCube();
-        }, spawnInterval);
-
-        setInterval(spawnLaser, laserInterval);
-        requestAnimationFrame(gameLoop);
-        gameStarted = true;
+  cubes.forEach((c, index) => {
+    if (c.y > canvas.height) {
+      cubes.splice(index, 1);
+      score++;
+      if (score % 5 === 0) {
+        cubeSpeed += 0.5;
+        spawnInterval = Math.max(350, spawnInterval - 50);
       }
     }
+  });
+
+  requestAnimationFrame(gameLoop);
+}
+
+    let cubeSpawner, laserSpawner;
+
+function startGame() {
+  document.getElementById("start-menu").style.display = "none";
+  gameOver = false;
+  gameStarted = true;
+
+  score = 0;
+  cubeSpeed = 3;
+  spawnInterval = 500;
+  cubes.length = 0;
+  lasers.length = 0;
+  laserWarnings.length = 0;
+  player.x = 285;
+  player.y = 360;
+
+  cubeSpawner = setInterval(() => {
+    spawnCube();
+    if (score > 10) spawnCube();
+    if (score > 25) spawnCube();
+  }, spawnInterval);
+
+  laserSpawner = setInterval(spawnLaser, laserInterval);
+
+  requestAnimationFrame(gameLoop);
+}
+
   </script>
 </body>
 </html>

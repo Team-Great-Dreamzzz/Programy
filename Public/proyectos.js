@@ -718,43 +718,53 @@ function escapeHtml(text) {
           <i class="fas fa-ghost fa-2x"></i>
           <h3>No se encontraron proyectos</h3>
           <p>Intenta con otros términos de búsqueda</p>
-          <img draggable="false" oncontextmenu="return false" ondragstart="return false;" src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmF2cHJlNXYzNHpyMzlnNG56MTNzZnczOWZoNjFhanVpODFwbGk4YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7b01Wv8oROOFa/giphy.gif" alt="Nada encontrado" style="margin-top: 1rem; width: 120px; display: block; margin-left: auto; margin-right: auto;">
+          <img draggable="false" oncontextmenu="return false" ondragstart="return false;" src="https://jpsr.in/assets/images/nodatafound.gif" alt="Nada encontrado" style="margin-top: 1rem; width: 120px; display: block; margin-left: auto; margin-right: auto;">
         </div>`;
       return;
     }
 
     elements.projectsList.innerHTML = "";
     showResultCount(elements.projectsList, list.length, searchTerm);
-    elements.projectsList.innerHTML += list.map(p => {
-      const reportCount = data.reports.filter(r => r.projectId === p.id && r.status === "pendiente").length;
-      const firstImage = p.files && p.files.length && p.files.find(f => f.mimeType.startsWith("image/"));
-      const imgSrc = p.thumbnailPath || (firstImage && firstImage.filePath);
-      
-      return `
-        <div class="project-card" data-id="${p.id}">
-          ${reportCount > 0 ? `<div class="reported-badge">${reportCount} Reporte${reportCount > 1 ? 's' : ''}</div>` : ''}
-          ${imgSrc
-            ? `<img src="${imgSrc}" alt="${p.name}" class="project-thumbnail">`
-            : `<div class="project-thumbnail"><i class="fas fa-image"></i></div>`}
-          <h3>${p.name}</h3>
-          <p>${truncateText(p.description, 100)}</p>
-          <div class="tech-tags">
-            ${p.technologies && p.technologies.slice(0, 3).map(t => `<span class="project-tech">${t}</span>`).join('')}
-          </div>
-          <div class="project-status ${getStatusClass(p.status)}">${getStatusText(p.status)}</div>
-          <div class="project-actions">
-            <small>Publicado por: ${p.author} ${data.isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}</small>
-            ${data.currentUser === p.author || data.isAdmin
-              ? `<button class="btn btn-danger delete-btn" data-id="${p.id}"><i class="fas fa-trash"></i> Eliminar</button>`
-              : ''}
-            ${data.currentUser && data.currentUser !== p.author
-              ? `<button class="btn btn-warning report-btn" data-id="${p.id}" data-name="${p.name}"><i class="fas fa-flag"></i> Reportar</button>`
-              : ''}
-          </div>
-        </div>`;
-    }).join("");
+elements.projectsList.innerHTML += list.map(p => {
+  const reportCount = data.reports.filter(r => r.projectId === p.id && r.status === "pendiente").length;
+  const firstImage = p.files && p.files.length && p.files.find(f => f.mimeType.startsWith("image/"));
+  const imgSrc = p.thumbnailPath || (firstImage && firstImage.filePath);
+  const likeCount = p.likes?.length || 0;
+  const likedByUser = p.likes?.includes(data.currentUser);
+
+  return `
+    <div class="project-card" data-id="${p.id}">
+      ${reportCount > 0 ? `<div class="reported-badge">${reportCount} Reporte${reportCount > 1 ? 's' : ''}</div>` : ''}
+      ${imgSrc
+        ? `<img src="${imgSrc}" alt="${p.name}" class="project-thumbnail">`
+        : `<div class="project-thumbnail"><i class="fas fa-image"></i></div>`}
+      <h3>${p.name}</h3>
+      <p>${truncateText(p.description, 100)}</p>
+      <div class="tech-tags">
+        ${p.technologies && p.technologies.slice(0, 3).map(t => `<span class="project-tech">${t}</span>`).join('')}
+      </div>
+      <div class="project-status ${getStatusClass(p.status)}">${getStatusText(p.status)}</div>
+      <div class="project-actions">
+        <small>Publicado por: ${p.author} ${data.isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}</small>
+        ${data.currentUser && data.currentUser !== p.author
+          ? `<button class="btn btn-warning report-btn" data-id="${p.id}" data-name="${p.name}"><i class="fas fa-flag"></i> Reportar</button>`
+          : ''}
+    ${data.currentUser
+  ? `<button class="btn btn-sm btn-like ${likedByUser ? 'liked' : ''}" data-id="${p.id}" title="Me gusta">
+       <i class="fa${likedByUser ? 's' : 'r'} fa-heart"></i> ${likeCount}
+     </button>`
+  : ''}
+        ${data.currentUser === p.author || data.isAdmin
+          ? `<button class="btn btn-danger delete-btn" data-id="${p.id}"><i class="fas fa-trash"></i> Eliminar</button>`
+          : ''}
+      </div>
+    </div>`;
+}).join("");
+
 
     setupProjectCardEvents();
+    setupLikeButtons();
+
   }
 
   // Renderizar proyectos del usuario
@@ -807,6 +817,7 @@ function escapeHtml(text) {
     }).join("");
 
     setupProjectCardEvents();
+    
   }
 
   // Agregar eventos a tarjetas
@@ -859,6 +870,41 @@ function escapeHtml(text) {
       });
     });
   }
+function setupLikeButtons() {
+  document.querySelectorAll(".btn-like").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const pid = btn.dataset.id;
+      if (!data.currentUser) {
+        alert("Debes iniciar sesión para dar like");
+        return;
+      }
+
+      const icon = btn.querySelector("i");
+      icon.classList.remove("fa-heart", "fas", "far");
+      icon.classList.add("fa-spinner", "fa-spin");
+
+      try {
+        const resp = await fetch(`/api/project/${pid}/like`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: data.currentUser })
+        });
+
+        if (!resp.ok) throw new Error("Error al dar like");
+        const result = await resp.json();
+
+        // Recargar datos y volver a renderizar
+        await loadData();
+        renderAllProjects();
+      } catch (err) {
+        console.error("Error al dar like:", err);
+        alert("Error al registrar tu like");
+      }
+    });
+  });
+}
+
 
   // Enviar reporte
   async function handleReportSubmit(e) {

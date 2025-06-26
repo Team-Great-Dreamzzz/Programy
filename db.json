@@ -1,29 +1,5 @@
 {
-  "projects": [
-    {
-      "id": "1750268132855",
-      "name": "frdxsz",
-      "description": "4rfedxs",
-      "category": "fredxcs",
-      "technologies": [
-        "rfedx"
-      ],
-      "status": "busqueda",
-      "author": "admin",
-      "link": "",
-      "thumbnailPath": "/uploads/thumbnails/1750268132854_OIP_(3).jpeg",
-      "files": [
-        {
-          "originalName": "OIP__3_-removebg-preview.png",
-          "filePath": "/uploads/files/1750268132854_OIP__3_-removebg-preview.png",
-          "mimeType": "image/png",
-          "size": 102396
-        }
-      ],
-      "comments": [],
-      "createdAt": "2025-06-18T17:35:32.855Z"
-    }
-  ],
+  "projects": [],
   "users": [
     {
       "username": "admin",

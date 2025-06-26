@@ -33,6 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
     loadChatHistory();
     setupEventListeners();
   }
+  // Evitar que Lenis intercepte el scroll del chat
+if (chatMessages) {
+  chatMessages.addEventListener('wheel', (e) => {
+    // Detectar si puede hacer scroll en el chat
+    const canScroll = chatMessages.scrollHeight > chatMessages.clientHeight;
+    if (canScroll) {
+      e.stopPropagation(); // Impedir que Lenis capture el evento
+    }
+  }, { passive: false });
+}
 
   function createChatUI() {
     const container = document.createElement('div');
@@ -125,14 +135,18 @@ document.addEventListener('DOMContentLoaded', () => {
 async function queryGeminiAPI(prompt) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
   
+  const contents = [
+    { role: 'user', parts: [{ text: systemPrompt }] },
+    ...chatHistory.map(entry => ({
+      role: entry.role === 'user' ? 'user' : 'model',
+      parts: [{ text: entry.content }]
+    })),
+    { role: 'user', parts: [{ text: prompt }] }
+  ];
+
   const data = {
     generationConfig,
-    contents: [{
-      role: 'user',
-      parts: [{
-        text: `${systemPrompt}\n\nUsuario: ${prompt}`
-      }]
-    }]
+    contents
   };
 
   const response = await fetch(url, {
