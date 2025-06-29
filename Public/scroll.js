@@ -5,7 +5,7 @@ ScrollReveal().reveal('.info-block:not(.reverse)', {
   duration: 1000,
   easing: 'ease-out',
   interval: 200,
-  reset: false
+  reset: true
 });
 
 ScrollReveal().reveal('.info-block.reverse', {
@@ -14,5 +14,5 @@ ScrollReveal().reveal('.info-block.reverse', {
   duration: 1000,
   easing: 'ease-out',
   interval: 200,
-  reset: false
+  reset: true
 });

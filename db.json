@@ -1,5 +1,39 @@
 {
-  "projects": [],
+  "projects": [
+    {
+      "id": "1751232930784",
+      "name": "Proyecto Épico n° 1",
+      "description": "Este es mi proyecto épico",
+      "category": "Diseño",
+      "technologies": [
+        "Drawing"
+      ],
+      "status": "completado",
+      "author": "Estudiante",
+      "link": "",
+      "thumbnailPath": "/uploads/thumbnails/1751232930781_descargar_(5).jpeg",
+      "files": [
+        {
+          "originalName": "Ado Pixel Art.jpeg",
+          "filePath": "/uploads/files/1751232930781_Ado_Pixel_Art.jpeg",
+          "mimeType": "image/jpeg",
+          "size": 16546
+        }
+      ],
+      "comments": [
+        {
+          "id": "1751232959696",
+          "author": "Estudiante",
+          "content": "Hola :D",
+          "createdAt": "2025-06-29T21:35:59.696Z"
+        }
+      ],
+      "createdAt": "2025-06-29T21:35:30.784Z",
+      "likes": [
+        "Estudiante"
+      ]
+    }
+  ],
   "users": [
     {
       "username": "admin",
