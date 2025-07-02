@@ -1378,8 +1378,8 @@ h1 {
 }
 
 .container {
-  width: 200px;
-  height: 100%;
+  width: 100px;
+  height: 10%;
   margin: 0 auto 0;
   perspective: 1000;
   backface-visibility: hidden;
@@ -1387,6 +1387,70 @@ h1 {
   bottom: 20px;
   right: 20px;  
   z-index: 5;
+}
+/* ====== Estilos para la sección W3Schools CTA ====== */
+
+.w3schools-cta {
+  box-shadow:
+    0 0 20px 4px rgba(155, 133, 9, 0.6),  /* glow dorado */
+    0 4px 15px var(--color-shadow-dark);    /* sombra base */
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.w3schools-cta:hover {
+  box-shadow:
+    0 0 30px 6px rgba(165, 141, 5, 0.8),  /* glow más intenso al pasar */
+    0 6px 20px var(--color-shadow-dark);
+}
+
+.w3schools-cta {
+  background: linear-gradient(135deg, rgb(65, 19, 19), rgb(160, 6, 6));
+  color: #fff;
+  padding: 2rem;
+  text-align: center;
+  border-radius: 12px;
+  margin: 3rem 0 2rem;
+  box-shadow: 0 4px 15px var(--color-shadow-dark);
+}
+.w3schools-cta h3 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+.w3schools-cta p {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+.w3schools-cta ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+}
+.w3schools-cta ul li {
+  margin: 0.5rem 0;
+  position: relative;
+  padding-left: 1.8rem;
+  font-size: 1rem;
+}
+.w3schools-cta ul li::before {
+  content: "✔";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--color-bg);
+}
+.btn-w3 {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-btn-primary);
+  color: var(--color-text-secondary);
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s, transform 0.2s;
+}
+.btn-w3:hover {
+  background-color: var(--color-btn-hover);
+  transform: translateY(-2px);
 }
 
 .pulse-button {
