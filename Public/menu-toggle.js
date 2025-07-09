@@ -8,6 +8,16 @@ document.addEventListener("DOMContentLoaded", () => {
       link.addEventListener("click", () => nav.classList.remove("open"))
     );
   }
+  // Cerrar el menú al hacer clic fuera de él
+document.addEventListener("click", (e) => {
+  const toggle = document.getElementById("menu-toggle");
+  const nav = document.getElementById("nav");
+
+  // Si el menú está abierto y el clic no es dentro del nav ni del botón
+  if (nav.classList.contains("open") && !nav.contains(e.target) && e.target !== toggle) {
+    nav.classList.remove("open");
+  }
+});
 
   // Crear modal global
   const modal = document.createElement("div");

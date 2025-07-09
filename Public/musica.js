@@ -9,10 +9,10 @@
   muteBtn.style.position = "fixed";
   muteBtn.style.bottom = "20px";
   muteBtn.style.right = "20px";
-  muteBtn.style.padding = "10px 14px";
+  muteBtn.style.padding = "10px 10px";
   muteBtn.style.border = "none";
   muteBtn.style.borderRadius = "50%";
-  muteBtn.style.background = "#531b1b";
+  muteBtn.style.background = "#78828b";
   muteBtn.style.color = "white";
   muteBtn.style.fontSize = "1.2rem";
   muteBtn.style.cursor = "pointer";

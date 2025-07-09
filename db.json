@@ -26,12 +26,42 @@
           "author": "Estudiante",
           "content": "Hola :D",
           "createdAt": "2025-06-29T21:35:59.696Z"
+        },
+        {
+          "id": "1751818429447",
+          "author": "Estudiante",
+          "content": ",,,",
+          "createdAt": "2025-07-06T16:13:49.448Z"
         }
       ],
       "createdAt": "2025-06-29T21:35:30.784Z",
       "likes": [
         "Estudiante"
       ]
+    },
+    {
+      "id": "1752103093907",
+      "name": "Proyecto Épico n° 2",
+      "description": "Descripción épica",
+      "category": "Diseño",
+      "technologies": [
+        "Dibujo",
+        "Pintura"
+      ],
+      "status": "busqueda",
+      "author": "Estudiante",
+      "link": "https://chat.deepseek.com/",
+      "thumbnailPath": "/uploads/thumbnails/1752103093903_avatar4.png.jpg",
+      "files": [
+        {
+          "originalName": "sssstik_BFskFKLV2Z_2025-05-23-18-06-22.png",
+          "filePath": "/uploads/files/1752103093904_sssstik_BFskFKLV2Z_2025-05-23-18-06-22.png",
+          "mimeType": "image/png",
+          "size": 20548
+        }
+      ],
+      "comments": [],
+      "createdAt": "2025-07-09T23:18:13.907Z"
     }
   ],
   "users": [
