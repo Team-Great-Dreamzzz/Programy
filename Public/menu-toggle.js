@@ -1,24 +1,30 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Menú hamburguesa
   const toggle = document.getElementById("menu-toggle");
   const nav = document.getElementById("nav");
+  
   if (toggle && nav) {
-    toggle.addEventListener("click", () => nav.classList.toggle("open"));
-    nav.querySelectorAll("a").forEach(link =>
-      link.addEventListener("click", () => nav.classList.remove("open"))
-    );
-  }
-  // Cerrar el menú al hacer clic fuera de él
-document.addEventListener("click", (e) => {
-  const toggle = document.getElementById("menu-toggle");
-  const nav = document.getElementById("nav");
+    toggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      nav.classList.toggle("open");
+      toggle.classList.toggle("active");
+    });
 
-  // Si el menú está abierto y el clic no es dentro del nav ni del botón
-  if (nav.classList.contains("open") && !nav.contains(e.target) && e.target !== toggle) {
-    nav.classList.remove("open");
-  }
-});
+    // Cerrar al hacer clic en enlaces
+    nav.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => {
+        nav.classList.remove("open");
+        toggle.classList.remove("active");
+      });
+    });
 
+    // Cerrar al hacer clic fuera
+    document.addEventListener("click", (e) => {
+      if (!nav.contains(e.target) && e.target !== toggle) {
+        nav.classList.remove("open");
+        toggle.classList.remove("active");
+      }
+    });
+  }
   // Crear modal global
   const modal = document.createElement("div");
   modal.className = "modal";

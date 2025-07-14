@@ -58,28 +58,55 @@
 
     <section class="team-section fade-in">
       <h2>Conoce al equipo</h2>
-      <div class="team-grid">
-        <div class="team-card">
-          <img src="avatar1.jpeg" alt="Jheanpier Corrales">
-          <h3>Jheanpier Corrales</h3>
-          <p>Desarrollo front-end, arquitectura back-end e idea general <br><strong>Nota: Para ser mi segundo proyecto, nada mal.</strong></p><hr>
-        </div>
-        <div class="team-card">
-          <img src="avatar2.png" alt="Harry Chirinos">
-          <h3>Harry Chirinos</h3>
-          <p>Apoyo en la idea principal y testing de la beta</p><hr>
-        </div>
-        <div class="team-card">
-          <img src="avatar4.png.jpg" alt="Alexander Alave">
-          <h3>Alexander Alave</h3>
-          <p>Promoción del servicio, elaboración portafolio del proyecto <br><strong>Nota: Básicamente solo vender humo</strong></p><hr>
-        </div>
-        <div class="team-card">
-          <img src="avatar3.jpg" alt="Grimaldo Paredes">
-          <h3>Grimaldo Paredes</h3>
-          <p>Crítico, publicitario y elaboracion del portafolio</p><hr>
-        </div>
-      </div>
+<div class="team-cards-container">
+  <div class="team-card row-left fade-in-left">
+    <div class="team-img">
+      <img src="avatar1.jpg" alt="Jheanpier Corrales">
+    </div>
+    <div class="team-text">
+      <h3>Jheanpier Corrales</h3>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ligula quis ipsum eleifend commodo.</p>
+    </div>
+  </div>
+  <div class="team-card row-right fade-in-right">
+    <div class="team-text">
+      <h3>Harry Chirinos</h3>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ligula quis ipsum eleifend commodo.</p>
+    </div>
+    <div class="team-img">
+      <img src="avatar2.png" alt="Harry Chirinos">
+    </div>
+  </div>
+  <div class="team-card row-left fade-in-left">
+    <div class="team-img">
+      <img src="avatar4.png.jpg" alt="Alexander Alave">
+    </div>
+    <div class="team-text">
+      <h3>Alexander Alave</h3>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ligula quis ipsum eleifend commodo.</p>
+    </div>
+  </div>
+  <div class="team-card row-right fade-in-right">
+    <div class="team-text">
+      <h3>Grimaldo Paredes</h3>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ligula quis ipsum eleifend commodo.</p>
+    </div>
+    <div class="team-img">
+      <img src="avatar3.jpg" alt="Grimaldo Paredes">
+    </div>
+  </div>
+  <div class="team-card row-left fade-in-left">
+    <div class="team-img">
+      <img src="avatar5.jpg" alt="Camila Cisneros">
+    </div>
+    <div class="team-text">
+      <h3>Camila Cisneros</h3>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ligula quis ipsum eleifend commodo.</p>
+    </div>
+  </div>
+</div>
+
+
       <br>
       <h1>Contacto! Sugerencias información y opiniones :D</h1>
   
@@ -115,6 +142,20 @@
           </div>
           <h2>TikTok</h2>
           <p><a href="https://www.tiktok.com/@crime_clute" target="_blank">@crime_clute</a></p>
+        </div>
+          <div class="contact-block">
+          <div class="icon">
+            <img src="icons/X.svg" alt="X">
+          </div>
+          <h2>X (Twitter)</h2>
+          <p><a href="https://x.com/programyZ_xZ" target="_blank">@programyZ_xZ</a></p>
+        </div>
+         <div class="contact-block">
+          <div class="icon">
+            <img src="icons/ig.svg" alt="ig">
+          </div>
+          <h2>Instagram</h2>
+          <p><a href="https://www.instagram.com/programyx_zx/" target="_blank">@programyx_zx</a></p>
         </div>
       </section>
       <section class="game-section fade-in">
@@ -268,5 +309,20 @@
     randomPosition();
     startMovement();
   }</script>
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, index) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.classList.add('in-view');
+      }, index * 250); // efecto cascada
+    } else {
+      entry.target.classList.remove('in-view');
+    }
+  });
+}, { threshold: 0.3 });
+  document.querySelectorAll('.team-card, .contact-block').forEach(el => observer.observe(el));
+  document.querySelectorAll('.team-card').forEach(card => observer.observe(card));
+</script>
 </body>
 </html>

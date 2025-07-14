@@ -2,7 +2,10 @@
 * {
   box-sizing: border-box;
 }
-
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
 body {
   font-family: 'Inter', sans-serif;
   line-height: 1.6;
@@ -718,6 +721,7 @@ img {
 /* TARJETAS DE EQUIPO */
 .team-card img {
   width: 200px;
+  border-radius: 5%;
 }
 
 /* CHATBOT */
@@ -1497,4 +1501,189 @@ h1 {
     transform: translateY(100vh);
     opacity: 0;
   }
+}
+/* Añadir al final del archivo */
+
+@media (max-width: 768px) {
+
+  body {
+    font-size: 14px;
+  }
+  
+  main {
+    padding: 1rem;
+  }
+  
+  /* Header */
+  header {
+    padding: 1rem;
+  }
+  
+  .logo-title a {
+    font-size: 1.5rem;
+  }
+  
+  /* Hero section */
+  .hero-slider {
+    height: 60vh;
+  }
+  
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+  .hero-gradient-transition{
+    display: none;
+  }
+  /* Info blocks */
+  .info-block, .info-block.reverse {
+    flex-direction: column;
+    margin: 1.5rem 0;
+  }
+  
+  .info-text, .info-image {
+    min-width: 100%;
+  }
+  
+  /* Herramientas */
+  .tools-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filters {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  /* Proyectos */
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Modal */
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  /* Preloader */
+  .loader-wrapper {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  /* Footer */
+  .footer-copyright-text {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Ajustes adicionales para móviles pequeños */
+  .hero-slider {
+    height: 50vh;
+  }
+  
+  .hero-title {
+    font-size: 1.8rem;
+  }
+  
+  .hero-form {
+    flex-direction: column;
+  }
+  
+  .hero-form input {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .section-title {
+    font-size: 1.8rem;
+  }
+  
+  /* Tool cards */
+  .tool-card {
+    padding: 1rem;
+  }
+  
+  /* W3Schools CTA */
+  .w3schools-cta {
+    padding: 1rem;
+  }
+  
+  .w3schools-cta h3 {
+    font-size: 1.5rem;
+  }
+}
+.tools-grid-container {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
+
+.tools-grid {
+  min-width: 300px; /* Ancho mínimo para móviles */
+}
+.team-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  margin-top: 2rem;
+}
+
+.team-card {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  justify-content: space-between;
+  padding: 2rem;
+  border-radius: 12px;
+  background-color: var(--color-bg-secondary);
+  box-shadow: 0 4px 16px var(--color-shadow-medium);
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.8s ease-out;
+}
+
+.team-card .team-img img {
+  width: 200px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px var(--color-shadow-dark);
+}
+
+.team-text {
+  flex: 1;
+}
+
+.fade-in-left {
+  transform: translateX(-100px);
+}
+.fade-in-right {
+  transform: translateX(100px);
+}
+
+.team-card.in-view {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (max-width: 768px) {
+  .team-card {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+.contact-block {
+  opacity: 0;
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.5s ease-out;
+}
+
+.contact-block.in-view {
+  opacity: 1;
+  transform: scale(1) translateY(0);
 }
